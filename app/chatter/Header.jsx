@@ -1,0 +1,30 @@
+'use client';
+import { useSession, signIn, signOut } from "next-auth/react";
+export default function Header() {
+    var session = useSession().data;
+    function getSessionUserEmail() {
+        if (session != null) {
+            if (session.user != null) {
+                if (session.user.email != null) {
+                    return session.user.email;
+                }
+            }
+        }
+        return false;
+    }
+    var email = getSessionUserEmail();
+    if (!email) {
+        return (<div className='chat-header'>
+                <img src='./logo.png' alt='logo' width={150} height={100}/>
+                <h1>Chatter</h1>
+                <button onClick={function () { return signIn(); }}>Sign in</button>
+            </div>);
+    }
+    else {
+        return (<div className='chat-header'>
+                <img src='./logo.png' alt='logo' width={150} height={100}/>
+                <h1>Chatter</h1>
+                <button onClick={function () { return signOut({ callbackUrl: "/api/auth/signin" }); }}>Sign out({email}) </button>
+            </div>);
+    }
+}

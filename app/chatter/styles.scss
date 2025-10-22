@@ -1,0 +1,27 @@
+/* enter stlyes here */
+
+body{
+    background-color: yellow;
+
+    .chat-header{
+        background-color: blue;
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+
+        button {
+            height: 30px;
+            padding: 5px 15px;
+        }
+    }
+    .chat-window {
+        display: flex;
+
+        .chats {
+            .chat-form {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    }
+}
