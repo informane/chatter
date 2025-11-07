@@ -1,10 +1,12 @@
 'use client'
 
-import { useActionState, useContext } from 'react';
+import { useState } from 'react';
 import { useSession, signIn, signOut } from "next-auth/react"
-import Image  from "next/image"
+import Modal from './Modal';
+
 export default function Header() {
 
+    const [modalSearchIsOpen, setModalSearchIsOpen] = useState(false);
     const {data: session} = useSession();
 
     function getSessionUserEmail() {
@@ -25,16 +27,16 @@ export default function Header() {
         return (
             <div className='chat-header'>
                 <img src='./logo.png' alt='logo' width={150} height={100}/>
-                <h1>Chatter</h1>
-                <button onClick={() => signIn()}>Sign in</button>
+                <h1>Chat with google users!</h1>
+                <button className='primary-btn' onClick={() => signIn()}>Sign in</button>
             </div>      
         );
     } else {
         return (
             <div className='chat-header'>
                 <img src='./logo.png' alt='logo' width={150} height={100}/>
-                <h1>Chatter</h1>
-                <button onClick={() => signOut({ callbackUrl: "/api/auth/signin" })}>Sign out({email}) </button>
+                <h1>Chat with google users!</h1>
+                <button className='primary-btn' onClick={() => signOut({ callbackUrl: "/api/auth/signin" })}>Sign out({email}) </button>
             </div>      
         );
     }

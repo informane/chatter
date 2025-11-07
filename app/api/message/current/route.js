@@ -1,3 +1,14 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,10 +47,42 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import dbConnect from '../../../lib/mongodb';
 import Message from '../../../chatter/models/Message';
-import { getCurrentUserModel } from '../../../lib/chatter';
-export default function GET(request) {
+import { NextResponse } from 'next/server';
+import { getServerSessionEmail, getUserModel } from '../../../lib/chatter';
+import User from 'app/chatter/models/User';
+export function GET(request) {
     return __awaiter(this, void 0, void 0, function () {
-        var searchParams, chat_id, current_user, msgs, MessageInstance, error_1;
+        var searchParams, chat_id, MessageModel, messages, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 3, , 4]);
+                    return [4 /*yield*/, dbConnect()];
+                case 1:
+                    _a.sent();
+                    searchParams = request.nextUrl.searchParams;
+                    chat_id = searchParams.get('chat_id');
+                    if (!chat_id)
+                        throw new Error('chat_id is empty!');
+                    MessageModel = Message;
+                    return [4 /*yield*/, MessageModel.find({ chat: chat_id })
+                            .populate('user')];
+                case 2:
+                    messages = _a.sent();
+                    if (!messages)
+                        throw new Error('cant find messages!');
+                    return [2 /*return*/, NextResponse.json({ success: true, data: messages }, { status: 200 })];
+                case 3:
+                    error_1 = _a.sent();
+                    return [2 /*return*/, NextResponse.json({ success: false, error: error_1.message }, { status: 400 })];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+}
+export function POST(request) {
+    return __awaiter(this, void 0, void 0, function () {
+        var body, searchParams, chat_id, email, UserModel, currentUser, user_id, MessageModel, message, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -47,29 +90,35 @@ export default function GET(request) {
                     return [4 /*yield*/, dbConnect()];
                 case 1:
                     _a.sent();
+                    return [4 /*yield*/, request.json()];
+                case 2:
+                    body = _a.sent();
+                    if (!body)
+                        throw new Error('msg body is empty!');
                     searchParams = request.nextUrl.searchParams;
                     chat_id = searchParams.get('chat_id');
-                    return [4 /*yield*/, getCurrentUserModel()];
-                case 2:
-                    current_user = _a.sent();
-                    if (!current_user) return [3 /*break*/, 4];
-                    MessageInstance = Message;
-                    return [4 /*yield*/, MessageInstance.find({ user_id: current_user._id, chat_id: chat_id })];
+                    if (!chat_id)
+                        throw new Error('chat_id is empty!');
+                    return [4 /*yield*/, getServerSessionEmail()];
                 case 3:
-                    msgs = _a.sent();
-                    return [3 /*break*/, 5];
-                case 4: return [2 /*return*/, new Response(JSON.stringify({ success: false }), { status: 400 })];
+                    email = _a.sent();
+                    if (!email)
+                        throw new Error('cant find current user\'s email!');
+                    UserModel = User;
+                    return [4 /*yield*/, getUserModel(email)];
+                case 4:
+                    currentUser = _a.sent();
+                    if (!currentUser)
+                        throw new Error('cant find current user!');
+                    user_id = currentUser._id;
+                    MessageModel = Message;
+                    return [4 /*yield*/, MessageModel.create(__assign(__assign({}, body), { chat: chat_id, user: user_id }))];
                 case 5:
-                    if (!msgs) {
-                        return [2 /*return*/, new Response(JSON.stringify({ success: false }), { status: 400 })];
-                    }
-                    else {
-                        return [2 /*return*/, new Response(JSON.stringify({ success: true, data: msgs }), { status: 200 })];
-                    }
-                    return [3 /*break*/, 7];
+                    message = _a.sent();
+                    return [2 /*return*/, NextResponse.json({ success: true, data: message }, { status: 200 })];
                 case 6:
-                    error_1 = _a.sent();
-                    return [2 /*return*/, new Response(JSON.stringify(error_1), { status: 400 })];
+                    error_2 = _a.sent();
+                    return [2 /*return*/, NextResponse.json({ success: false, error: error_2.message }, { status: 400 })];
                 case 7: return [2 /*return*/];
             }
         });

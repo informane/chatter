@@ -1,13 +1,14 @@
 import mongoose from 'mongoose';
-var ObjectId = mongoose.Schema.Types.ObjectId;
 var MessageSchema = new mongoose.Schema({
-    chat_id: {
-        type: ObjectId,
+    chat: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Chat",
         required: true,
     },
-    user_id: {
-        type: ObjectId,
-        required: true,
+    user: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     message: {
         type: String,

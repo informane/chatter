@@ -37,30 +37,121 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import dbConnect from "./mongodb";
 import User from '../chatter/models/User';
+import Chat from '../chatter/models/Chat';
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-export function addChatAction(queryData) {
+import { cookies } from 'next/headers';
+/*
+export async function addChatAction(queryData: FormData) {
+
+    const newChat = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/chat/current', {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(queryData),
+    })
+    const res = await newChat.json()
+    return res;
+}*/
+export function getChatUsers(chatId) {
     return __awaiter(this, void 0, void 0, function () {
-        var newChat, res;
+        var ChatModel, chat;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/chat/current', {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(queryData),
-                    })];
+                case 0: return [4 /*yield*/, dbConnect()];
                 case 1:
-                    newChat = _a.sent();
-                    return [4 /*yield*/, newChat.json()];
+                    _a.sent();
+                    ChatModel = Chat;
+                    return [4 /*yield*/, ChatModel.findById(chatId)
+                            .populate('users')];
                 case 2:
+                    chat = _a.sent();
+                    return [2 /*return*/, chat.users];
+            }
+        });
+    });
+}
+export function getConversationUser(chatId, myEmail) {
+    return __awaiter(this, void 0, void 0, function () {
+        var chatUsers, _i, chatUsers_1, user;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, dbConnect()];
+                case 1:
+                    _a.sent();
+                    return [4 /*yield*/, getChatUsers(chatId)];
+                case 2:
+                    chatUsers = _a.sent();
+                    for (_i = 0, chatUsers_1 = chatUsers; _i < chatUsers_1.length; _i++) {
+                        user = chatUsers_1[_i];
+                        if (user.email !== myEmail)
+                            return [2 /*return*/, JSON.stringify(user)];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+export function addToContacts(user_id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var cookieStore, sessionTokenCookie, sessionToken, addedChat, res;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, cookies()];
+                case 1:
+                    cookieStore = _a.sent();
+                    sessionTokenCookie = cookieStore.get('next-auth.session-token');
+                    sessionToken = sessionTokenCookie.value;
+                    return [4 /*yield*/, fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/chat/current?user_id=' + user_id, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                "Cookie": "next-auth.session-token=".concat(sessionToken, ";path=/;expires=Session")
+                            },
+                            cache: 'no-store',
+                            body: ''
+                        })];
+                case 2:
+                    addedChat = _a.sent();
+                    return [4 /*yield*/, addedChat.json()];
+                case 3:
                     res = _a.sent();
                     return [2 /*return*/, res];
             }
         });
     });
 }
+export function sendMessage(message, chat_id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var cookieStore, sessionTokenCookie, sessionToken, addedMessage, res;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, cookies()];
+                case 1:
+                    cookieStore = _a.sent();
+                    sessionTokenCookie = cookieStore.get('next-auth.session-token');
+                    sessionToken = sessionTokenCookie.value;
+                    return [4 /*yield*/, fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/message/current?chat_id=' + chat_id, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                "Cookie": "next-auth.session-token=".concat(sessionToken, ";path=/;expires=Session")
+                            },
+                            cache: 'no-store',
+                            body: JSON.stringify({ message: message })
+                        })];
+                case 2:
+                    addedMessage = _a.sent();
+                    return [4 /*yield*/, addedMessage.json()];
+                case 3:
+                    res = _a.sent();
+                    return [2 /*return*/, res];
+            }
+        });
+    });
+}
+//ця функція поки не використовується і не перевірялась
 export function getMessages(chat_id) {
     return __awaiter(this, void 0, void 0, function () {
         var URL, params, queryString, fullUrl, newChat, res;
@@ -92,7 +183,7 @@ export function getServerSessionEmail() {
         var session;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, getServerSession(authOptions)];
+                case 0: return [4 /*yield*/, getServerSession()];
                 case 1:
                     session = _a.sent();
                     if (session != null) {
@@ -107,15 +198,16 @@ export function getServerSessionEmail() {
         });
     });
 }
-export function getUserModelById(id) {
+export function getUserModel(email) {
     return __awaiter(this, void 0, void 0, function () {
-        var User, user;
+        var UserModel, user;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, dbConnect()];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, User.findById(id)];
+                    UserModel = User;
+                    return [4 /*yield*/, UserModel.findOne({ email: email }).exec()];
                 case 2:
                     user = _a.sent();
                     return [2 /*return*/, user];
@@ -123,6 +215,24 @@ export function getUserModelById(id) {
         });
     });
 }
+export function getUserModelById(id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var UserModel, user;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, dbConnect()];
+                case 1:
+                    _a.sent();
+                    UserModel = User;
+                    return [4 /*yield*/, UserModel.findById(id)];
+                case 2:
+                    user = _a.sent();
+                    return [2 /*return*/, user];
+            }
+        });
+    });
+}
+//ця функція поки не використовується і не перевірялась
 export function getCurrentUserModel() {
     return __awaiter(this, void 0, void 0, function () {
         var session, userPromise;
@@ -147,23 +257,6 @@ export function getCurrentUserModel() {
                         } //else reject(false);
                     });
                     return [2 /*return*/, userPromise];
-            }
-        });
-    });
-}
-export function getUserModel(email) {
-    return __awaiter(this, void 0, void 0, function () {
-        var UserModel, user;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, dbConnect()];
-                case 1:
-                    _a.sent();
-                    UserModel = User;
-                    return [4 /*yield*/, UserModel.findOne({ email: email })];
-                case 2:
-                    user = _a.sent();
-                    return [2 /*return*/, user];
             }
         });
     });

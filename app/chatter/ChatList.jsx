@@ -1,15 +1,4 @@
 'use client';
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,39 +35,47 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { addChatAction } from '../lib/chatter';
 import { useSession } from "next-auth/react";
+import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import Search from './Search';
 function ChatList(_a) {
-    var chat_id = _a.chat_id;
-    var _b = useSession(), session = _b.data, status = _b.status;
-    var _c = useState({ name: '', description: '', error: '' }), chatFormState = _c[0], setChatFormState = _c[1];
-    var _d = useState([{ _id: 0, name: '', description: '', error: '' }]), Chats = _d[0], setChats = _d[1];
+    var _b;
+    var chat_id = _a.chat_id, onChangeChatId = _a.onChangeChatId;
+    var _c = useSession(), session = _c.data, status = _c.status;
+    var _d = useState([]), Chats = _d[0], setChats = _d[1];
     //const [state, formAction, isPending] = useActionState(addChat, {});
+    var searchParams = useSearchParams();
+    var _e = useState((_b = searchParams.get('chat-search')) !== null && _b !== void 0 ? _b : ''), term = _e[0], setTerm = _e[1];
+    var _f = useState({ message: null }), error = _f[0], setError = _f[1];
     useEffect(function () {
-        function initialFetch() {
+        function initialFetch(term) {
             return __awaiter(this, void 0, void 0, function () {
                 var chatsPromise, chats;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, fetch('/api/chat/current')];
+                        case 0: return [4 /*yield*/, fetch('/api/chat/current?query=' + term)];
                         case 1:
                             chatsPromise = _a.sent();
                             return [4 /*yield*/, chatsPromise.json()];
                         case 2:
                             chats = _a.sent();
-                            if (!chats.error) {
-                                setChats(chats.data);
+                            console.log(chats);
+                            if (!chats.success) {
+                                setError({ message: chats.error });
+                                setChats([]);
                             }
                             else {
-                                return [2 /*return*/, <p>Server error loading chats!</p>];
+                                setChats(chats.data);
+                                setError({ message: null });
                             }
+                            setError({ message: null });
                             return [2 /*return*/];
                     }
                 });
             });
         }
-        initialFetch();
+        initialFetch(term);
         /*const eventSource = new EventSource('/api/chat/current/update');
 
         eventSource.onmessage = (event) => {
@@ -93,31 +90,31 @@ function ChatList(_a) {
         return () => {
             eventSource.close();
         };*/
-    }, []);
+    }, [term]);
     if (status === 'loading') {
         return <p>Loading session...</p>;
     }
+    function chooseChat(new_chat_id) {
+        chat_id = new_chat_id;
+        onChangeChatId(chat_id);
+    }
     function renderChatList() {
         if (!Chats.length)
-            return <p>You dont have chats yet!</p>;
+            return (<div className='chat-not-found'>
+                    Contacts not found!
+                </div>);
         var chatList = Chats.map(function (value, index) {
-            return (<div key={Chats[index]._id} className='chat'>
-                    <div className='chat-name'>{Chats[index].name}</div>
+            return (<div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={function (e) { return chooseChat(Chats[index]._id); }}>
+                    <img src={Chats[index].users[0].avatar} height={35} width={35}/>
+                    <span>{Chats[index].name}</span>
                 </div>);
         });
         return chatList;
     }
-    function actionHandler(formData) {
-        var addedChat = addChatAction(formData);
-    }
     return (<div className='chats'>
-            <form className='chat-form' action={actionHandler}>
-                <h2>Add Chat</h2>
-                <input type="text" name="name" value={chatFormState.name} onChange={function (e) { return setChatFormState(__assign(__assign({}, chatFormState), { name: e.target.value })); }}/>
-                <input type="text" name="description" value={chatFormState.description} onChange={function (e) { return setChatFormState(__assign(__assign({}, chatFormState), { description: e.target.value })); }}/>
-                <button type="submit">Add Chat</button>
-                {chatFormState.error}
-            </form>
+            <div className='chat-search'>
+                <Search queryVar='chat-search' placeholder='search your contacts' onTermChange={setTerm}/>
+            </div>
             <div className='chat-list'>
                 {renderChatList()}
             </div>

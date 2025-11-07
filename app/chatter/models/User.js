@@ -5,11 +5,16 @@ var UserSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    chat_ids: [{
-            type: ObjectId,
+    chats: [{
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Chat',
             required: true,
         }],
+    friend: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        require: false
+    },
     name: {
         type: String,
         required: true,

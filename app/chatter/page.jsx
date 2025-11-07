@@ -3,40 +3,42 @@ import Header from './Header';
 import ChatList from './ChatList';
 import Messages from './Messages';
 import InputMessage from "./InputMessage";
+import { useState } from 'react';
 import './styles.scss';
-import { useSearchParams } from 'next/navigation';
 import UserSearch from './UserSearch';
 export default function Chatter() {
-    var _a;
-    var searchParams = useSearchParams();
-    var chat_id_str = (_a = searchParams.get('chat_id')) !== null && _a !== void 0 ? _a : '0';
-    var chat_id = parseInt(chat_id_str);
-    if (chat_id) {
-        return (<div>
+    var _a = useState(null), chatId = _a[0], setChatId = _a[1];
+    /* const searchParams = useSearchParams();
+     const chat_id = searchParams.get('chat_id') ?? '';*/
+    function changeChatId(chat_id) {
+        setChatId(chat_id);
+    }
+    if (chatId) {
+        return (<div className='main'>
         <header>
           <Header />
         </header>
         <section className='chat-window'>
-          <aside>
-            <ChatList chat_id={chat_id}/>
+          <aside>            
             <UserSearch />
+            <ChatList chat_id={chatId} onChangeChatId={setChatId}/>
           </aside>
           <article>
-            <Messages chat_id={chat_id}/>
-            <InputMessage chat_id={chat_id}/>
+            <Messages chat_id={chatId} onChangeChatId={setChatId}/>
+            <InputMessage chat_id={chatId} onChangeChatId={setChatId}/>
           </article>
         </section>
       </div>);
     }
     else {
-        return (<div>
+        return (<div className='main'>
         <header>
           <Header />
         </header>
         <section className='chat-window'>
           <aside>
-            <ChatList chat_id={chat_id}/>
             <UserSearch />
+            <ChatList chat_id={chatId} onChangeChatId={setChatId}/>
           </aside>
         </section>
       </div>);

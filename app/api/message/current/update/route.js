@@ -37,17 +37,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import dbConnect from "../../../../lib/mongodb";
 import Message from "../../../../chatter/models/Message";
 import { NextResponse } from "next/server";
-import { getUserModelById } from "../../../../lib/chatter";
-// Required for SSE to prevent Next.js from closing the connection
-export var config = {
-    api: {
-        responseLimit: false,
-    },
-};
+import { getUserModelById } from "app/lib/chatter";
+export var dynamic = 'force-dynamic';
 export function GET(request) {
     return __awaiter(this, void 0, void 0, function () {
-        var headers, changeStream_1;
-        var _this = this;
+        var headers, searchParams, chat_id, pipeline, changeStream, encoder, readableStream;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: 
@@ -57,41 +51,56 @@ export function GET(request) {
                     // Connect to MongoDB
                     _a.sent();
                     headers = {
-                        'Content-Type': 'text/event-stream',
-                        'Cache-Control': 'no-cache',
+                        'Content-Type': 'text/event-stream; charset=utf-8',
                         'Connection': 'keep-alive',
-                        'X-Accel-Buffering': 'no'
+                        'Cache-Control': 'no-cache, no-transform',
+                        //'Content-Encoding': 'none',
+                        //'X-Accel-Buffering': 'no',
+                        //'Access-Control-Allow-Origin': 'http://localhost:3000'
                     };
-                    //const nativeRequest = request.request;
-                    try {
-                        changeStream_1 = Message.watch();
-                        changeStream_1.on('change', function (change) {
-                            console.log('Change detected by Mongoose:', change);
-                            var users = [];
-                            for (var _i = 0, _a = change.entries(); _i < _a.length; _i++) {
-                                var _b = _a[_i], index = _b[0], message = _b[1];
-                                users[index] = getUserModelById(message.user_id);
-                            }
-                            NextResponse.json({ msgs: change, users: users }, { status: 201, headers: headers });
-                        });
-                        request.on('close', function () { return __awaiter(_this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        console.log('Disconnected client. Closing stream.');
-                                        return [4 /*yield*/, changeStream_1.close()];
-                                    case 1:
-                                        _a.sent();
-                                        return [2 /*return*/];
-                                }
+                    searchParams = request.nextUrl.searchParams;
+                    chat_id = searchParams.get('chat_id');
+                    pipeline = [
+                        {
+                            $match: {
+                                chat_id: chat_id,
+                            },
+                        },
+                    ];
+                    changeStream = Message.watch( /*pipeline, { fullDocument: 'updateLookup' }*/);
+                    encoder = new TextEncoder();
+                    readableStream = new ReadableStream({
+                        start: function (controller) {
+                            var _this = this;
+                            changeStream.on('change', function (change) { return __awaiter(_this, void 0, void 0, function () {
+                                var changeObject, _a, changedData;
+                                return __generator(this, function (_b) {
+                                    switch (_b.label) {
+                                        case 0:
+                                            changeObject = change.fullDocument;
+                                            _a = changeObject;
+                                            return [4 /*yield*/, getUserModelById(changeObject.user)];
+                                        case 1:
+                                            _a.user = _b.sent();
+                                            console.log('Change detected by Mongoose:', changeObject);
+                                            changedData = "data: " + JSON.stringify(changeObject) + "\n\n";
+                                            controller.enqueue(encoder.encode(changedData));
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); });
+                            changeStream.on('error', function (error) {
+                                console.error('Change stream error:', error);
+                                controller.error(error);
+                                changeStream.close();
                             });
-                        }); });
-                    }
-                    catch (error) {
-                        console.error('SSE connection error:', error);
-                        NextResponse.json(error, { status: 400 });
-                    }
-                    return [2 /*return*/];
+                        },
+                        cancel: function () {
+                            console.log('Disconnected client. Closing stream.');
+                            changeStream.close();
+                        }
+                    });
+                    return [2 /*return*/, new NextResponse(readableStream, { headers: headers })];
             }
         });
     });

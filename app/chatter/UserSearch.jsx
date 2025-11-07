@@ -37,14 +37,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { useSearchParams, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { addToContacts } from "app/lib/chatter";
 import Search from './Search';
+import Modal from './Modal';
 export default function UserSearch() {
     var _this = this;
     var _a;
     var _b = useState([]), Users = _b[0], setUsers = _b[1];
+    var _c = useState({ message: null }), error = _c[0], setError = _c[1];
+    var _d = useState({ message: null }), success = _d[0], setSuccess = _d[1];
     var searchParams = useSearchParams();
     var pathname = usePathname();
-    var _c = useState((_a = searchParams.get('query')) !== null && _a !== void 0 ? _a : ''), term = _c[0], setTerm = _c[1];
+    var _e = useState((_a = searchParams.get('contact-search')) !== null && _a !== void 0 ? _a : ''), term = _e[0], setTerm = _e[1];
+    var _f = useState(false), modalSearchIsOpen = _f[0], setModalSearchIsOpen = _f[1];
     useEffect(function () {
         var searchUsers = function (term) { return __awaiter(_this, void 0, void 0, function () {
             var promise, Users_1;
@@ -64,34 +69,61 @@ export default function UserSearch() {
                     case 3:
                         setUsers([]);
                         _a.label = 4;
-                    case 4: return [2 /*return*/];
+                    case 4:
+                        setSuccess({ message: null });
+                        setError({ message: null });
+                        return [2 /*return*/];
                 }
             });
         }); };
         searchUsers(term);
     }, [term]);
-    function addToContacts(e) {
-        e.target;
+    function handleAddContact(user_id) {
+        return __awaiter(this, void 0, void 0, function () {
+            var res;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, addToContacts(user_id)];
+                    case 1:
+                        res = _a.sent();
+                        if (!res.success) {
+                            setSuccess({ message: null });
+                            setError({ message: res.error });
+                        }
+                        else {
+                            setSuccess({ message: "Successfull added to contacts!" });
+                            setError({ message: null });
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     }
     function renderUsers() {
         if (!Users.length)
-            return <p>Start searching!</p>;
+            return <p></p>;
         var users = Users.map(function (value, index) {
             return (<div key={Users[index]._id} className='user'>
-                    <img src={Users[index].avatar} alt={Users[index].email}/>
-                    <div className='user-name'>{Users[index].name}</div>
-                    <div className='user-email'>{Users[index].email}</div>
-                    <div className='user-description'>{Users[index].description}</div>
-                    <div className="user-add">
-                        <button id={Users[index]._id} className="user-add-button" onClick={addToContacts}>Add to contancts</button>
+                    <img src={Users[index].avatar} alt={Users[index].name}/>
+                    <div className="user-details">
+                        <div className='user-name'>{Users[index].name}</div>
+                        <div className='user-email'>{Users[index].email}</div>
+                        <div className='user-description'>{Users[index].description}</div>
+                        <div>
+                            <button className="user-add-button" onClick={function (e) { return handleAddContact(Users[index]._id); }}>Add to contancts</button>
+                        </div>
                     </div>
                 </div>);
         });
-        return <div className='user-list'>{users}</div>;
+        return <div className='users-list'>{users}</div>;
     }
-    return (<div className='users'>
-            <h2>Search Users</h2>
-            <Search model='user' placeholder='search users' onTermChange={setTerm}/>
-            {renderUsers()}
+    return (<div className='users-add'>
+            <button onClick={function () { return setModalSearchIsOpen(true); }}>Add new contact</button>
+            <Modal isOpen={modalSearchIsOpen} onClose={function () { return setModalSearchIsOpen(false); }}>
+                <Search queryVar='contact-search' placeholder='start typing' onTermChange={setTerm}/>
+                <div className="success">{success.message}</div>
+                <div className="error">{error.message}</div>
+                {renderUsers()}
+            </Modal>
         </div>);
 }

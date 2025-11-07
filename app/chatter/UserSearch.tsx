@@ -4,65 +4,81 @@ import { useSession } from "next-auth/react";
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
+import { addToContacts } from "app/lib/chatter";
 import Search from './Search';
+import Modal from './Modal';
+import User from "./models/User";
 
 export default function UserSearch() {
     const [Users, setUsers] = useState([]);
+    const [error, setError] = useState({message: null});
+    const [success, setSuccess] = useState({message: null});
     const searchParams = useSearchParams();
     const pathname = usePathname();
-    const [term, setTerm] = useState(searchParams.get('query') ?? '');
+    const [term, setTerm] = useState(searchParams.get('contact-search') ?? '');
+    const [modalSearchIsOpen, setModalSearchIsOpen] = useState(false);
 
-    useEffect(()=>{
+    useEffect(() => {
         const searchUsers = async (term: string) => {
-           if(term.length){
-                const promise = await fetch('/api/user?query='+term);
+            if (term.length) {
+                const promise = await fetch('/api/user?query=' + term);
                 const Users = await promise.json();
+
                 console.log(Users.data);
                 setUsers(Users.data);
             } else {
                 setUsers([]);
             }
-            
+            setSuccess({message: null});
+            setError({message: null});
         }
 
         searchUsers(term);
 
-    },[term])
+    }, [term])
 
-    function addToContacts(e: React.MouseEvent<HTMLElement>) {
-        e.target;
-        const fetchedChat = fetch('/api/chat/current', {
-            method: 'POST',
-            headers: {
-                'content-type': ''
-            }
-        })
+    async function handleAddContact(user_id) {
+        const res = await addToContacts(user_id);
+        if(!res.success) {
+            setSuccess({message: null});
+            setError({message: res.error});
+        } else {
+            setSuccess({message: "Successfull added to contacts!"});
+            setError({message: null});
+        }
     }
-
     function renderUsers() {
-        if(!Users.length) return <p>Start searching!</p>
+        if (!Users.length) return <p></p>
 
         var users = Users.map((value, index) => {
             return (
                 <div key={Users[index]._id} className='user'>
-                    <img src={Users[index].avatar} alt={Users[index].email}/>
-                    <div className='user-name'>{Users[index].name}</div>
-                    <div className='user-email'>{Users[index].email}</div>
-                    <div className='user-description'>{Users[index].description}</div>
-                    <div className="user-add">
-                        <button id={Users[index]._id} className="user-add-button" onClick={addToContacts}>Add to contancts</button>
+                    <img src={Users[index].avatar} alt={Users[index].name} />
+                    <div className="user-details">
+                        <div className='user-name'>{Users[index].name}</div>
+                        <div className='user-email'>{Users[index].email}</div>
+                        <div className='user-description'>{Users[index].description}</div>
+                        <div>
+                            <button className="user-add-button" onClick={(e) => handleAddContact(Users[index]._id)}>Add to contancts</button>
+                        </div>
                     </div>
                 </div>
             )
         })
-        return  <div className='user-list'>{users}</div>
+        return <div className='users-list'>{users}</div>
     }
 
+
+
     return (
-        <div className='users'>
-            <h2>Search Users</h2>
-            <Search model='user' placeholder='search users' onTermChange={setTerm}/>
-            {renderUsers()}
+        <div className='users-add'>
+            <button onClick={()=>setModalSearchIsOpen(true)}>Add new contact</button>
+            <Modal isOpen={modalSearchIsOpen} onClose={()=>setModalSearchIsOpen(false)}>
+                <Search queryVar='contact-search' placeholder='start typing' onTermChange={setTerm} />
+                <div className="success">{success.message}</div>
+                <div className="error">{error.message}</div>
+                {renderUsers()}
+            </Modal>
         </div>
     )
 }

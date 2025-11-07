@@ -19,9 +19,8 @@ export async function GET(request: NextRequest) {
   // Set headers for SSE
   const headers = {
     'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-cache, no-transform',
     'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no'
   }
 
  //const nativeRequest = request.request;
@@ -30,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     changeStream.on('change', (change) => {
       console.log('Change detected by Mongoose:', change);
-
+      
       NextResponse.json({chats: change}, {status: 201, headers: headers});
     })
 

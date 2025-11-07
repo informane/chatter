@@ -47,7 +47,7 @@ export function GET(request) {
                     return [4 /*yield*/, dbConnect()];
                 case 1:
                     _a.sent();
-                    error = false;
+                    error = { status: false, message: null };
                     data = [];
                     UserModel = User;
                     searchParams = request.nextUrl.searchParams;
@@ -58,28 +58,31 @@ export function GET(request) {
                 case 2:
                     users = _a.sent();
                     if (!users) {
-                        error = true;
+                        error = { status: true, message: 'can\'t find such users!' };
                     }
                     else {
                         data = users;
-                        error = false;
+                        error = { status: false, message: null };
                     }
                     return [3 /*break*/, 5];
                 case 3: return [4 /*yield*/, UserModel.find({})];
                 case 4:
                     users = _a.sent();
                     if (!users) {
-                        error = true;
+                        error = { status: true, message: 'can\'t find such users!' };
                     }
                     else {
                         data = users;
-                        error = false;
+                        error = { status: false, message: null };
                     }
                     _a.label = 5;
-                case 5: return [2 /*return*/, NextResponse.json({ success: !error, data: data }, { status: !error ? 200 : 400 })];
+                case 5:
+                    if (error.status)
+                        throw new Error(error.message);
+                    return [2 /*return*/, NextResponse.json({ success: true, data: data }, { status: 200 })];
                 case 6:
                     error_1 = _a.sent();
-                    return [2 /*return*/, NextResponse.json({ error: JSON.stringify(error_1) }, { status: 401 })];
+                    return [2 /*return*/, NextResponse.json({ success: false, error: error_1.message }, { status: 400 })];
                 case 7: return [2 /*return*/];
             }
         });
@@ -88,7 +91,7 @@ export function GET(request) {
 //checked
 export function POST(request) {
     return __awaiter(this, void 0, void 0, function () {
-        var body, user, savedUser, error_2;
+        var body, error, user, savedUser, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -99,12 +102,16 @@ export function POST(request) {
                     return [4 /*yield*/, request.json()];
                 case 2:
                     body = _a.sent();
+                    if (!body)
+                        error = { status: true, message: 'User body is empty!' };
                     user = new User(body);
                     return [4 /*yield*/, user.save()];
                 case 3:
                     savedUser = _a.sent();
+                    if (!savedUser)
+                        error = { status: true, message: 'User could not be saved!' };
                     //throw new Error(JSON.stringify(savedUser));
-                    return [2 /*return*/, NextResponse.json(savedUser, { status: 201 })];
+                    return [2 /*return*/, NextResponse.json({ success: true, data: savedUser }, { status: 201 })];
                 case 4:
                     error_2 = _a.sent();
                     return [2 /*return*/, NextResponse.json({ error: JSON.stringify(error_2) }, { status: 400 })];

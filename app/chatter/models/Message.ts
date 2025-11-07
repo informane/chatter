@@ -1,14 +1,15 @@
 import mongoose from 'mongoose';
 
-const ObjectId = mongoose.Schema.Types.ObjectId;
-const MessageSchema = new mongoose.Schema({
-  chat_id: {
-    type: ObjectId,
+const MessageSchema = new mongoose.Schema<IMessageDocument>({
+  chat: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
     required: true,
   },
-  user_id: {
-    type: ObjectId,
-    required: true,
+  user: {
+    type: mongoose.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   message: {
     type: String,
@@ -19,8 +20,8 @@ const MessageSchema = new mongoose.Schema({
 });
 
 export interface IMessage {
-  chat_id: mongoose.Schema.Types.ObjectId;
-  user_id: mongoose.Schema.Types.ObjectId;
+  chat: mongoose.Schema.Types.ObjectId;
+  user: mongoose.Schema.Types.ObjectId;
   message: string;
   createdAt: Date;
   updatedAt: Date
@@ -30,4 +31,4 @@ export interface IMessageDocument extends IMessage, Document {
 }
 
 
-export default mongoose.models.Message || mongoose.model<IMessage>('Message', MessageSchema);
+export default mongoose.models.Message || mongoose.model<IMessageDocument>('Message', MessageSchema);

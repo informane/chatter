@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
-var ObjectId = mongoose.Schema.Types.ObjectId;
 var ChatSchema = new mongoose.Schema({
-    user_ids: [{
-            type: mongoose.Schema.Types.ObjectId,
+    users: [{
+            type: mongoose.Types.ObjectId,
             ref: 'User',
-            //required: true
+            required: true
         }],
     name: {
         type: String,

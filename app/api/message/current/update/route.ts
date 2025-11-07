@@ -1,49 +1,63 @@
 import dbConnect from "../../../../lib/mongodb";
 import Message from "../../../../chatter/models/Message";
 import { NextRequest, NextResponse } from "next/server";
+import { getUserModelById } from "app/lib/chatter";
 //import NextApiRequest from 'next'
-import type {NextApiRequest} from 'next'
-import { getUserModel, getUserModelById } from "../../../../lib/chatter";
-// Required for SSE to prevent Next.js from closing the connection
-export const config = {
-  api: {
-    responseLimit: false,
-  },
-};
+import type { NextApiRequest } from 'next'
+export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextApiRequest) {
+export async function GET(request: NextRequest) {
 
   // Connect to MongoDB
   await dbConnect();
 
   // Set headers for SSE
   const headers = {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
+    'Content-Type': 'text/event-stream; charset=utf-8',
     'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no'
+    'Cache-Control': 'no-cache, no-transform',
+    //'Content-Encoding': 'none',
+    //'X-Accel-Buffering': 'no',
+    //'Access-Control-Allow-Origin': 'http://localhost:3000'
   }
 
- //const nativeRequest = request.request;
-  try {
-    const changeStream = Message.watch();
+  const { searchParams } = request.nextUrl;
+  const chat_id = searchParams.get('chat_id');
 
-    changeStream.on('change', (change) => {
-      console.log('Change detected by Mongoose:', change);
-      let users = [];
-      for(let [index,message] of change.entries()) {
-        users[index] = getUserModelById(message.user_id)
-      }
-      NextResponse.json({msgs: change, users: users}, {status: 201, headers: headers});
-    })
+  const pipeline = [
+    {
+      $match: {
+        chat_id: chat_id,
+      },
+    },
+  ];
+  const changeStream = Message.watch(pipeline, { fullDocument: 'updateLookup' });
 
-    request.on('close', async () => {
+  const encoder = new TextEncoder();
+  const readableStream = new ReadableStream({
+    start(controller) {
+      changeStream.on('change', async (change) => {
+
+        const changeObject = change.fullDocument;
+        changeObject.user = await getUserModelById(changeObject.user);
+        console.log('Change detected by Mongoose:', changeObject);
+
+        const changedData = "data: " + JSON.stringify(changeObject) + "\n\n";
+        controller.enqueue(encoder.encode(changedData));
+      })
+
+      changeStream.on('error', (error) => {
+        console.error('Change stream error:', error);
+        controller.error(error);
+        changeStream.close();
+      });
+
+    },
+    cancel() {
       console.log('Disconnected client. Closing stream.')
-      await changeStream.close();
-    })
+      changeStream.close();
+    }
+  })
 
-  } catch (error) {
-    console.error('SSE connection error:', error);
-    NextResponse.json(error, {status: 400});
-  }
+  return new NextResponse(readableStream, { headers: headers });
 }

@@ -1,33 +1,41 @@
 'use client'
 
-import { addChatAction } from '../lib/chatter';
 import { ChatterProps } from 'app/lib/props';
 import { useSession } from "next-auth/react";
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useActionState, useState, useEffect } from 'react';
 import Search from './Search';
 
-
-function ChatList({ chat_id }: ChatterProps) {
+function ChatList({ chat_id, onChangeChatId }: ChatterProps) {
     const { data: session, status } = useSession();
-    const [chatFormState, setChatFormState] = useState({ name: '', description: '', error: '' });
-    const [Chats, setChats] = useState([{ _id: 0, name: '', description: '', error: '' }]);
+    const [Chats, setChats] = useState([]);
     //const [state, formAction, isPending] = useActionState(addChat, {});
+    const searchParams = useSearchParams();
+    const [term, setTerm] = useState(searchParams.get('chat-search') ?? '');
+    const [error, setError] = useState({ message: null });
+
 
 
     useEffect(() => {
 
-        async function initialFetch() {
-            const chatsPromise = await fetch('/api/chat/current');
+        async function initialFetch(term: string) {
+
+            const chatsPromise = await fetch('/api/chat/current?query=' + term);
             const chats = await chatsPromise.json();
-            if (!chats.error) {
-                setChats(chats.data);
+            console.log(chats)
+            if (!chats.success) {
+                setError({ message: chats.error });
+                setChats([]);
+
             } else {
-                return <p>Server error loading chats!</p>
+                setChats(chats.data);
+                setError({ message: null });
+
             }
+            setError({ message: null });
         }
 
-        initialFetch();
+        initialFetch(term);
 
         /*const eventSource = new EventSource('/api/chat/current/update');
 
@@ -44,20 +52,31 @@ function ChatList({ chat_id }: ChatterProps) {
             eventSource.close();
         };*/
 
-    }, []);
+    }, [term]);
 
 
     if (status === 'loading') {
         return <p>Loading session...</p>;
     }
 
+    function chooseChat(new_chat_id: string) {
+        chat_id = new_chat_id;
+        onChangeChatId(chat_id);
+    }
+
     function renderChatList() {
-        if (!Chats.length) return <p>You dont have chats yet!</p>
+        if (!Chats.length)
+            return (
+                <div className='chat-not-found'>
+                    Contacts not found!
+                </div>
+            );
 
         const chatList = Chats.map((value, index) => {
             return (
-                <div key={Chats[index]._id} className='chat'>
-                    <div className='chat-name'>{Chats[index].name}</div>
+                <div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={(e) => chooseChat(Chats[index]._id)}>
+                    <img src={Chats[index].users[0].avatar} height={35} width={35}/>
+                    <span>{Chats[index].users[0].name}</span>
                 </div>
             )
         })
@@ -65,20 +84,13 @@ function ChatList({ chat_id }: ChatterProps) {
         return chatList;
     }
 
-    function actionHandler(formData: FormData){
-        
-        const addedChat = addChatAction(formData);
-    }
+
 
     return (
         <div className='chats'>
-            <form className='chat-form' action={actionHandler}>
-                <h2>Add Chat</h2>
-                <input type="text" name="name" value={chatFormState.name} onChange={(e) => setChatFormState({ ...chatFormState, name: e.target.value })} />
-                <input type="text" name="description" value={chatFormState.description} onChange={(e) => setChatFormState({ ...chatFormState, description: e.target.value })} />
-                <button type="submit">Add Chat</button>
-                {chatFormState.error}
-            </form>
+            <div className='chat-search'>
+                <Search queryVar='chat-search' placeholder='search your contacts' onTermChange={setTerm} />
+            </div>
             <div className='chat-list'>
                 {renderChatList()}
             </div>

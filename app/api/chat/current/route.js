@@ -37,73 +37,84 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import dbConnect from '../../../lib/mongodb';
 import Chat from '../../../chatter/models/Chat';
 import { NextResponse } from 'next/server';
-import { getServerSessionEmail, getUserModel } from '../../../lib/chatter';
+import { getServerSessionEmail } from '../../../lib/chatter';
+import User from 'app/chatter/models/User';
 export function GET(request) {
     return __awaiter(this, void 0, void 0, function () {
-        var error, data, email, user, ChatModel, chats, i, error_1;
+        var error, data, UserChatsUsers, email, searchParams, query, UserModel, regex, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 13, , 14]);
+                    _a.trys.push([0, 9, , 10]);
                     return [4 /*yield*/, dbConnect()];
                 case 1:
                     _a.sent();
-                    error = false;
+                    error = { status: false, message: '' };
                     data = [];
                     return [4 /*yield*/, getServerSessionEmail()];
                 case 2:
                     email = _a.sent();
-                    if (!email) return [3 /*break*/, 12];
-                    return [4 /*yield*/, getUserModel(email)];
+                    if (!email) return [3 /*break*/, 7];
+                    searchParams = request.nextUrl.searchParams;
+                    query = searchParams.get('query');
+                    UserModel = User;
+                    if (!(query.length !== 0 && query)) return [3 /*break*/, 4];
+                    regex = new RegExp(query, 'i');
+                    return [4 /*yield*/, UserModel.findOne({ email: email })
+                            .populate({
+                            path: 'chats',
+                            match: { name: regex },
+                            populate: {
+                                path: 'users',
+                                match: { $and: [{ email: { $ne: email } }, { $or: [{ email: regex }, { name: regex }, { description: regex }] }] }
+                            }
+                        })];
                 case 3:
-                    user = _a.sent();
-                    if (!user) return [3 /*break*/, 10];
-                    ChatModel = Chat;
-                    if (!user.chat_ids.length) return [3 /*break*/, 8];
-                    chats = [];
-                    i = 0;
-                    _a.label = 4;
-                case 4:
-                    if (!(i < user.chat_ids.length)) return [3 /*break*/, 7];
-                    return [4 /*yield*/, ChatModel.findById(user.chat_ids[i])];
+                    UserChatsUsers = _a.sent();
+                    return [3 /*break*/, 6];
+                case 4: return [4 /*yield*/, UserModel.findOne({ email: email })
+                        .populate({
+                        path: 'chats',
+                        populate: {
+                            path: 'users',
+                            match: { email: { $ne: email } }
+                        }
+                    })];
                 case 5:
-                    chats = _a.sent();
+                    UserChatsUsers = _a.sent();
                     _a.label = 6;
                 case 6:
-                    i++;
-                    return [3 /*break*/, 4];
-                case 7:
-                    //throw new Error(JSON.stringify(chats));
-                    if (chats) {
-                        data = chats;
-                        error = false;
+                    if (UserChatsUsers.chats.length) {
+                        //if(UserChatsUsers.chats.users) {
+                        data = UserChatsUsers.chats;
+                        //} else error = { status: true, message: 'chats for this user not found: ' + email }
                     }
-                    return [3 /*break*/, 9];
+                    else
+                        error = { status: true, message: 'chats for this user with given criteria not found: ' + email };
+                    return [3 /*break*/, 8];
+                case 7:
+                    error = { status: true, message: 'empty email: ' + email };
+                    _a.label = 8;
                 case 8:
-                    error = false;
-                    _a.label = 9;
-                case 9: return [3 /*break*/, 11];
-                case 10:
-                    error = true;
-                    _a.label = 11;
-                case 11: return [2 /*return*/, NextResponse.json({ success: !error, data: data }, { status: !error ? 201 : 400 })];
-                case 12: return [3 /*break*/, 14];
-                case 13:
+                    if (error.status)
+                        return [2 /*return*/, NextResponse.json({ success: false, error: error.message }, { status: 200 })];
+                    return [2 /*return*/, NextResponse.json({ success: true, data: data }, { status: 200 })];
+                case 9:
                     error_1 = _a.sent();
-                    return [2 /*return*/, NextResponse.json({ success: false, error: error_1.message }, { status: 401 })];
-                case 14: return [2 /*return*/];
+                    return [2 /*return*/, NextResponse.json({ success: false, error: error_1.message }, { status: 400 })];
+                case 10: return [2 /*return*/];
             }
         });
     });
 }
 export function POST(request) {
     return __awaiter(this, void 0, void 0, function () {
-        var error, data, email, body, User_1, ChatModel, error_2;
+        var error, data, email, searchParams, user_id, UserModel, currentUser, addingUser, ChatModel, existingChat, chat, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 8, , 9]);
-                    error = false;
+                    _a.trys.push([0, 20, , 21]);
+                    error = { message: '', status: false };
                     data = {};
                     return [4 /*yield*/, dbConnect()];
                 case 1:
@@ -111,34 +122,73 @@ export function POST(request) {
                     return [4 /*yield*/, getServerSessionEmail()];
                 case 2:
                     email = _a.sent();
-                    if (!email) {
-                        error = true;
-                    }
-                    return [4 /*yield*/, request.json()];
+                    if (!!email) return [3 /*break*/, 3];
+                    error = { message: 'Empty email: ' + email, status: true };
+                    return [3 /*break*/, 19];
                 case 3:
-                    body = _a.sent();
-                    return [4 /*yield*/, getUserModel(email)];
+                    searchParams = request.nextUrl.searchParams;
+                    user_id = searchParams.get('user_id');
+                    if (!user_id) return [3 /*break*/, 18];
+                    UserModel = User;
+                    return [4 /*yield*/, UserModel.findOne({ email: email }).populate('chats')];
                 case 4:
-                    User_1 = _a.sent();
-                    if (!User_1) return [3 /*break*/, 6];
-                    ChatModel = new Chat();
-                    ChatModel.user_ids = [];
-                    ChatModel.user_ids.push(User_1._id);
-                    ChatModel.name = body.name;
-                    ChatModel.description = body.description;
-                    return [4 /*yield*/, ChatModel.save()];
+                    currentUser = _a.sent();
+                    if (!currentUser) return [3 /*break*/, 16];
+                    return [4 /*yield*/, UserModel.findById(user_id).populate('chats')];
                 case 5:
-                    _a.sent();
-                    data = ChatModel;
-                    return [3 /*break*/, 7];
+                    addingUser = _a.sent();
+                    if (!addingUser) return [3 /*break*/, 14];
+                    if (!(email == addingUser.email)) return [3 /*break*/, 6];
+                    error = { message: 'you cannot add yourself to contacts!', status: true };
+                    return [3 /*break*/, 13];
                 case 6:
-                    error = true;
-                    _a.label = 7;
-                case 7: return [2 /*return*/, NextResponse.json({ success: !error, data: data }, { status: !error ? 201 : 400 })];
-                case 8:
+                    ChatModel = Chat;
+                    return [4 /*yield*/, ChatModel.find({ users: { $all: [currentUser._id, addingUser._id] } })];
+                case 7:
+                    existingChat = _a.sent();
+                    if (!existingChat.length) return [3 /*break*/, 8];
+                    error = { message: 'you have already this user in your contacts!', status: true };
+                    return [3 /*break*/, 13];
+                case 8: return [4 /*yield*/, ChatModel.create({ name: addingUser.name, description: addingUser.email })];
+                case 9:
+                    chat = _a.sent();
+                    chat.users.push(currentUser._id);
+                    chat.users.push(addingUser._id);
+                    chat.name = addingUser.name;
+                    chat.description = '';
+                    return [4 /*yield*/, chat.save()];
+                case 10:
+                    _a.sent();
+                    currentUser.chats.push(chat);
+                    return [4 /*yield*/, currentUser.save()];
+                case 11:
+                    _a.sent();
+                    addingUser.chats.push(chat);
+                    return [4 /*yield*/, addingUser.save()];
+                case 12:
+                    _a.sent();
+                    data = chat;
+                    _a.label = 13;
+                case 13: return [3 /*break*/, 15];
+                case 14:
+                    error = { message: 'empty adding_user: ' + addingUser, status: true };
+                    _a.label = 15;
+                case 15: return [3 /*break*/, 17];
+                case 16:
+                    error = { message: 'empty current_user: ' + currentUser, status: true };
+                    _a.label = 17;
+                case 17: return [3 /*break*/, 19];
+                case 18:
+                    error = { message: 'empty user_id: ' + user_id, status: true };
+                    _a.label = 19;
+                case 19:
+                    if (error.status)
+                        throw new Error(error.message);
+                    return [2 /*return*/, NextResponse.json({ success: true, data: data }, { status: 201 })];
+                case 20:
                     error_2 = _a.sent();
-                    return [2 /*return*/, NextResponse.json({ success: false, error: error_2.message }, { status: !error_2 ? 201 : 400 })];
-                case 9: return [2 /*return*/];
+                    return [2 /*return*/, NextResponse.json({ success: false, error: error_2.message }, { status: 400 })];
+                case 21: return [2 /*return*/];
             }
         });
     });

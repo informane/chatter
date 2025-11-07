@@ -1,27 +1,292 @@
 /* enter stlyes here */
+$container-width: 800px;
+$chat-margin: 25px;
+$chat-padding: 25px;
+$chat-color: rgb(31, 184, 14);
+$header-color: rgb(32, 47, 183);
+$bg-color: lightgray;
+$primary-btn-color: lightgray;
 
-body{
-    background-color: yellow;
+@mixin btn-primary ($color) {
+    background-color: $color;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    border: 1px solid gray;
+    box-shadow: 1px 3px 3px gray;
+}
 
-    .chat-header{
-        background-color: blue;
+@mixin input-primary {
+    /*border-radius: 6px;*/
+    height: 34px;
+    padding: 8px;
+    margin: 1px;
+    @include inset;
+
+    &:focus {
+        outline-style: inset;
+        outline-width: 1px;
+        outline-color: blue;
+    }
+}
+
+@mixin inset {
+    border: 1px solid gray;
+    box-shadow: inset 3px 3px 3px blue;
+}
+
+body {
+    background-color: $bg-color;
+    max-width: $container-width;
+    margin: auto;
+    position: relative;
+
+    .success {
+        color: green;
+        margin: 15px;
+    }
+
+    .error {
+        color: red;
+        margin: 15px;
+    }
+
+    .main {
+        height: 100vh;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 10px 10px;
+        box-shadow: 5px 5px 15px;
+        background-color: $chat-color;
+        margin: $chat-margin;
+        padding: $chat-padding;
+    }
+
+    .chat-header {
+        background-color: $header-color;
         display: flex;
         justify-content: space-evenly;
         align-items: center;
+        padding: 20px;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        border: 1px solid gray;
+
+        @media(max-width: 600px) {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: rgb(240, 28, 28)
+        }
 
         button {
-            height: 30px;
+            height: 40px;
             padding: 5px 15px;
+            font-size: 12px;
+            @include btn-primary($primary-btn-color);
         }
     }
-    .chat-window {
-        display: flex;
 
-        .chats {
-            .chat-form {
-                display: flex;
-                flex-direction: column;
+    .chat-window {
+        max-height: calc(100vh - 185px);
+        display: flex;
+        flex: 1;
+        background-color: rgb(20, 144, 20);
+
+        aside {
+            /*border-right: 3px solid gray;
+            box-shadow: inset 3px 3px 3px darkgray;*/
+
+            .chats {
+                /*background-color: rgb(136, 190, 136);*/
+
+                input {
+                    @include input-primary;
+                }
+
+                .chat-list {
+
+                    .chat {
+                        display: flex;
+                        align-items: center;
+                        gap: 3px;
+                        cursor: pointer;
+                        font-size: 12px;
+                        min-height: 46px;
+                        color: white;
+                        @include inset;
+                        padding: 5px;
+                        background-color: $header-color;
+                    }
+
+                    .chat.chosen {
+                        margin: 3px;
+
+                        background-color: rgb(3, 3, 70);
+                        box-shadow: inset 3px 3px 3px blue;
+                        outline: 3px solid blue;
+                    }
+
+                    .chat-not-found {
+                        height: 46px;
+                        color: white;
+                        border: 1px solid gray;
+                        box-shadow: inset 3px 3px 3px rgb(176, 3, 3);
+                        outline: 1px;
+                        padding: 15px;
+                        background-color: rgba(170, 59, 59, 0.7);
+                    }
+                }
             }
+        }
+
+        .users-add {
+
+            h2 {
+                font-size: 16px;
+                text-align: center;
+            }
+
+            input {
+                @include input-primary();
+            }
+
+            button {
+                width: 100%;
+                @include btn-primary($primary-btn-color);
+                cursor: pointer;
+            }
+        }
+
+        article {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: rgb(182, 242, 182);
+            box-shadow: inset -3px -3px 3px blue;
+            border: 1px solid gray;
+            color: pink;
+            width: 100%;
+
+            .message-list-header {
+                padding: 7px;
+                text-align: center;
+                background-color: $header-color;
+            }
+
+            .messages {
+                flex: 1;
+                height: calc(100% - 82px);
+
+                .message-list {
+
+                    overflow-y: scroll;
+                    height: calc(100% - 36px); 
+                    .message {
+                        padding: 15px;
+                        color: red;
+                        text-align: left;
+
+                        &.message-self {
+                            color: blue;
+                            text-align: right;
+                        }
+                    }
+                }
+            }
+        }
+
+        .message-form {
+            background-color: $header-color;
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+
+            textarea {
+                resize: none;
+                @include input-primary();
+                flex: 1;
+                height: 50px;
+            }
+
+            button {
+                @include btn-primary($primary-btn-color);
+                color: blue;
+                padding: 15px;
+
+            }
+        }
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 100vw;
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .modal {
+        border-radius: 8px;
+        padding: 15px;
+        position: absolute;
+        background-color: lightgrey;
+        margin: 0 calc(($container-width - 360px)/2);
+        width: 360px;
+        top: 10vh;
+        min-height: 250px;
+
+        @media (max-width: $container-width) {
+            margin: 0 calc((100vw - 360px)/2);
+        }
+
+        .close-button {
+            @include btn-primary (rgba(0, 0, 0, 0.3));
+            font-size: 32px;
+            line-height: 20px;
+            color: blue;
+        }
+
+        .users-list {
+
+            .user {
+                margin: 15px 0;
+                font-weight: 600;
+                display: flex;
+                gap: 15px;
+
+                .user-details {
+                    font-size: 15px;
+
+                    button {
+                        font-weight: 600;
+                        font-size: 15px;
+                        @include btn-primary(white);
+                    }
+
+                    display: flex;
+                    justify-content:space-between;
+                    flex-direction: column;
+                }
+            }
+        }
+
+        .search {
+            .search-field {
+                @include input-primary;
+                position: absolute;
+                top: 14px;
+                left: 100px;
+            }
+
         }
     }
 }

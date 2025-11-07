@@ -43,6 +43,7 @@ if (!MONGODB_URI) {
 /**
  * Cached connection for MongoDB.
  */
+mongoose.set('debug', true);
 var cached = { conn: null, promise: null };
 function dbConnect() {
     return __awaiter(this, void 0, void 0, function () {

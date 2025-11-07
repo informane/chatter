@@ -10,7 +10,7 @@ if (!MONGODB_URI) {
  * Cached connection for MongoDB.
  */
 
-
+mongoose.set('debug',true);
 var cached: {
   conn: typeof import("mongoose") | null, 
   promise: Promise<typeof import("mongoose")> | null

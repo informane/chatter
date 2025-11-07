@@ -37,16 +37,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
+import { useRef } from 'react';
 function Messages(_a) {
     var chat_id = _a.chat_id;
     var _b = useState([]), messages = _b[0], setMessages = _b[1];
-    var _c = useState([]), users = _c[0], setUsers = _c[1];
+    var _c = useState(null), convUser = _c[0], setConvUser = _c[1];
+    var eventSourceRef = useRef(null);
     var _d = useSession(), session = _d.data, status = _d.status;
     //const [state, formAction, isPending] = useActionState(fn, initialState, permalink?);
     useEffect(function () {
         function initialFetch(chat_id) {
             return __awaiter(this, void 0, void 0, function () {
-                var msgPromise, msgs;
+                var msgPromise, msgs, eventSource;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4 /*yield*/, fetch('/api/message/current?chat_id=' + chat_id)];
@@ -55,58 +57,74 @@ function Messages(_a) {
                             return [4 /*yield*/, msgPromise.json()];
                         case 2:
                             msgs = _a.sent();
-                            setMessages(msgs);
-                            return [2 /*return*/];
+                            setMessages(msgs.data);
+                            console.log(messages, msgs.data);
+                            if (eventSourceRef.current)
+                                return [2 /*return*/];
+                            eventSource = new EventSource('/api/message/current/update?chat_id=' + chat_id);
+                            eventSourceRef.current = eventSource;
+                            eventSourceRef.current.onmessage = function (event) {
+                                var data = JSON.parse(event.data);
+                                var addedMessage = data;
+                                console.log(messages);
+                                var newMessages = messages.map(function (item) { return item; });
+                                newMessages.push(addedMessage);
+                                setMessages(newMessages);
+                                console.log(newMessages, messages);
+                            };
+                            eventSourceRef.current.onerror = function (error) {
+                                console.log(JSON.stringify(error));
+                                eventSourceRef.current.close();
+                            };
+                            return [2 /*return*/, function () {
+                                    if (eventSourceRef.current) {
+                                        eventSourceRef.current.close();
+                                        eventSourceRef.current = null;
+                                        console.log('Closing EventSource connection');
+                                    }
+                                }];
                     }
                 });
             });
         }
-        //initialFetch(chat_id);
-        var eventSource = new EventSource('/api/message/current/update?chat_id=' + chat_id);
-        eventSource.onmessage = function (event) {
-            setMessages(event.data.msgs);
-            setUsers(event.data.users);
-        };
-        eventSource.onerror = function (error) {
-            console.log(error);
-            eventSource.close();
-        };
-        return function () {
-            eventSource.close();
-        };
+        initialFetch(chat_id);
     }, []);
-    function getSessionUser() {
-        if (session != null) {
-            if (session.user != null) {
-                return session.user;
-            }
+    /*useEffect(() => {
+        if (status !== 'loading') {
+            let messageWindow = document.getElementsByClassName('message-list')[0];
+            const messageWindowHeight = messageWindow.scrollHeight;
+            messageWindow.scrollTop = messageWindowHeight;
+            console.log(messageWindowHeight, messageWindow.scrollTop);
         }
-        return false;
-    }
-    if (status === 'loading') {
+    }, [status])
+
+    useEffect(() => {
+        async function handleGetConversationUser(chatId: string, email: string) {
+
+            const convUserRes = JSON.parse(await getConversationUser(chatId, email));
+            setConvUser(convUserRes.name);
+        };
+
+        handleGetConversationUser(chat_id, session?.user?.email)
+
+    });*/
+    /*if (status === 'loading') {
         return <p>Loading session...</p>;
-    }
-    var messageMap = messages;
-    var userMap = users;
-    var user = getSessionUser();
-    if (user != null && typeof (user) == 'object') {
-        if ("name" in user) {
-            var chatName = user.name;
-        }
-    }
-    else {
-        return <p>User not Found</p>;
-    }
-    var messageList = messageMap.map(function (value, index) {
-        return (<div className='message'>
-                <div className='message-date'>{messageMap[index].createdAt.toDateString()}</div>
-                <div className='message-user'>{userMap[index].name}</div>
-                <div className='message-text'>{messageMap[index].message}</div>
+    }*/
+    var messageList = messages.map(function (value, index) {
+        var _a;
+        var msgDate = new Date(messages[index].createdAt);
+        return (<div className={((_a = session === null || session === void 0 ? void 0 : session.user) === null || _a === void 0 ? void 0 : _a.name) === messages[index].user.name ? 'message message-self' : 'message'} key={messages[index]._id}>
+                <div className='message-date'>{msgDate.toLocaleTimeString()}</div>
+                <div className='message-user'>{messages[index].user.name}</div>
+                <div className='message-text'>{messages[index].message}</div>
             </div>);
     });
-    return (<div>
-            <h2 className='message-list-header'> Coversation: {chatName}</h2>
-            <div className='message-list'>{messageList.join()}</div>
+    return (<div className='messages'>
+            <h3 className='message-list-header'> Conversation: {/*convUser*/}</h3>
+            <div className='message-list'>
+                {messageList}
+            </div>
         </div>);
 }
 export default Messages;
