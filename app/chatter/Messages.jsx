@@ -36,8 +36,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { useState, useEffect } from 'react';
+import { getConversationUser } from '../lib/chatter';
 import { useSession } from "next-auth/react";
+import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
+import VoipCall from './VoipCall';
 function Messages(_a) {
     var chat_id = _a.chat_id;
     var _b = useState([]), messages = _b[0], setMessages = _b[1];
@@ -89,6 +92,12 @@ function Messages(_a) {
         }
         initialFetch(chat_id);
     }, []);
+    var router = useRouter();
+    useEffect(function () {
+        if (status === "unauthenticated") {
+            router.push("/api/auth/signin");
+        }
+    }, [status, router]);
     /*useEffect(() => {
         if (status !== 'loading') {
             let messageWindow = document.getElementsByClassName('message-list')[0];
@@ -96,21 +105,31 @@ function Messages(_a) {
             messageWindow.scrollTop = messageWindowHeight;
             console.log(messageWindowHeight, messageWindow.scrollTop);
         }
-    }, [status])
-
-    useEffect(() => {
-        async function handleGetConversationUser(chatId: string, email: string) {
-
-            const convUserRes = JSON.parse(await getConversationUser(chatId, email));
-            setConvUser(convUserRes.name);
-        };
-
-        handleGetConversationUser(chat_id, session?.user?.email)
-
-    });*/
-    /*if (status === 'loading') {
+    }, [status])*/
+    useEffect(function () {
+        var _a;
+        function handleGetConversationUser(chatId, email) {
+            return __awaiter(this, void 0, void 0, function () {
+                var convUserRes, _a, _b;
+                return __generator(this, function (_c) {
+                    switch (_c.label) {
+                        case 0:
+                            _b = (_a = JSON).parse;
+                            return [4 /*yield*/, getConversationUser(chatId, email)];
+                        case 1:
+                            convUserRes = _b.apply(_a, [_c.sent()]);
+                            setConvUser(convUserRes);
+                            return [2 /*return*/];
+                    }
+                });
+            });
+        }
+        ;
+        handleGetConversationUser(chat_id, (_a = session === null || session === void 0 ? void 0 : session.user) === null || _a === void 0 ? void 0 : _a.email);
+    }, []);
+    if (status === 'loading' || !convUser) {
         return <p>Loading session...</p>;
-    }*/
+    }
     var messageList = messages.map(function (value, index) {
         var _a;
         var msgDate = new Date(messages[index].createdAt);
@@ -121,7 +140,9 @@ function Messages(_a) {
             </div>);
     });
     return (<div className='messages'>
-            <h3 className='message-list-header'> Conversation: {/*convUser*/}</h3>
+            <h3 className='message-list-header'> Conversation: {convUser === null || convUser === void 0 ? void 0 : convUser.name}
+                <VoipCall userEmail={session.user.email} remoteUserEmail={convUser.email}/>
+                </h3>
             <div className='message-list'>
                 {messageList}
             </div>

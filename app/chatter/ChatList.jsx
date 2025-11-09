@@ -106,7 +106,7 @@ function ChatList(_a) {
         var chatList = Chats.map(function (value, index) {
             return (<div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={function (e) { return chooseChat(Chats[index]._id); }}>
                     <img src={Chats[index].users[0].avatar} height={35} width={35}/>
-                    <span>{Chats[index].name}</span>
+                    <span>{Chats[index].users[0].name}</span>
                 </div>);
         });
         return chatList;

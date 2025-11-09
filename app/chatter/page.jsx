@@ -10,9 +10,7 @@ export default function Chatter() {
     var _a = useState(null), chatId = _a[0], setChatId = _a[1];
     /* const searchParams = useSearchParams();
      const chat_id = searchParams.get('chat_id') ?? '';*/
-    function changeChatId(chat_id) {
-        setChatId(chat_id);
-    }
+    console.log(chatId);
     if (chatId) {
         return (<div className='main'>
         <header>

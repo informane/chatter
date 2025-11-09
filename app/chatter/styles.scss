@@ -178,6 +178,10 @@ body {
                 padding: 7px;
                 text-align: center;
                 background-color: $header-color;
+
+                button {
+                    @include btn-primary(#d3d3d3);
+                }
             }
 
             .messages {
@@ -187,7 +191,8 @@ body {
                 .message-list {
 
                     overflow-y: scroll;
-                    height: calc(100% - 36px); 
+                    height: calc(100% - 64px);
+
                     .message {
                         padding: 15px;
                         color: red;

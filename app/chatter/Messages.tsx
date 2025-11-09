@@ -8,10 +8,10 @@ import { IMessageDocument } from './models/Message';
 import { IUserDocument } from './models/User';
 import { useSession } from "next-auth/react";
 import type { Session, User } from '@auth/core/types';
- import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Model } from "mongoose";
 import { useRef } from 'react';
-
+import VoipCall from './VoipCall';
 function Messages({ chat_id }: ChatterProps) {
 
     const [messages, setMessages] = useState([]);
@@ -64,37 +64,41 @@ function Messages({ chat_id }: ChatterProps) {
 
     }, []);
 
-const router = useRouter();
+    const router = useRouter();
     useEffect(() => {
-        
+
         if (status === "unauthenticated") {
-            router.push("/api/auth/signin"); 
+            router.push("/api/auth/signin");
         }
     }, [status, router]);
 
-    /*useEffect(() => {
+    useEffect(() => {
         if (status !== 'loading') {
             let messageWindow = document.getElementsByClassName('message-list')[0];
-            const messageWindowHeight = messageWindow.scrollHeight;
-            messageWindow.scrollTop = messageWindowHeight;
-            console.log(messageWindowHeight, messageWindow.scrollTop);
+            if (messageWindow) {
+                const messageWindowHeight = messageWindow.scrollHeight;
+                messageWindow.scrollTop = messageWindowHeight;
+                console.log(messageWindowHeight, messageWindow.scrollTop);
+            }
         }
-    }, [status])*/
+    }, [status])
 
     useEffect(() => {
         async function handleGetConversationUser(chatId: string, email: string) {
 
             const convUserRes = JSON.parse(await getConversationUser(chatId, email));
-            setConvUser(convUserRes.name);
+            setConvUser(convUserRes);
         };
+
 
         handleGetConversationUser(chat_id, session?.user?.email)
 
-    });
+    }, []);
 
-    /*if (status === 'loading') {
+
+    if (status === 'loading' || !convUser) {
         return <p>Loading session...</p>;
-    }*/
+    }
 
     const messageList = messages.map((value, index) => {
 
@@ -108,9 +112,13 @@ const router = useRouter();
         )
     })
 
+
     return (
         <div className='messages'>
-            <h3 className='message-list-header'> Conversation: {convUser}</h3>
+            <h3 className='message-list-header'>
+                Conversation: {convUser?.name}
+                <VoipCall userEmail={session.user.email} remoteUserEmail={convUser.email} />
+            </h3>
             <div className='message-list'>
                 {messageList}
             </div>

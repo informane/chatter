@@ -1,6 +1,8 @@
 'use client';
+import { useState } from 'react';
 import { useSession, signIn, signOut } from "next-auth/react";
 export default function Header() {
+    var _a = useState(false), modalSearchIsOpen = _a[0], setModalSearchIsOpen = _a[1];
     var session = useSession().data;
     function getSessionUserEmail() {
         if (session != null) {

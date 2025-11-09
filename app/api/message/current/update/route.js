@@ -67,7 +67,7 @@ export function GET(request) {
                             },
                         },
                     ];
-                    changeStream = Message.watch( /*pipeline, { fullDocument: 'updateLookup' }*/);
+                    changeStream = Message.watch(pipeline, { fullDocument: 'updateLookup' });
                     encoder = new TextEncoder();
                     readableStream = new ReadableStream({
                         start: function (controller) {

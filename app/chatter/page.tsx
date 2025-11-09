@@ -15,10 +15,7 @@ export default function Chatter() {
  /* const searchParams = useSearchParams();
   const chat_id = searchParams.get('chat_id') ?? '';*/
 
-  function changeChatId(chat_id) {
-    setChatId(chat_id);
-
-  }
+  console.log(chatId);
   if (chatId) {
 
     return (
