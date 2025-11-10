@@ -35,23 +35,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 import { useState, useEffect } from 'react';
 import { getConversationUser } from '../lib/chatter';
 import { useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
-import VoipCall from './VoipCall';
+import VoipCallDynamic from './VoipCallDynamic';
 function Messages(_a) {
+    var _b;
     var chat_id = _a.chat_id;
-    var _b = useState([]), messages = _b[0], setMessages = _b[1];
-    var _c = useState(null), convUser = _c[0], setConvUser = _c[1];
+    var _c = useState([]), messages = _c[0], setMessages = _c[1];
+    var _d = useState(null), convUser = _d[0], setConvUser = _d[1];
     var eventSourceRef = useRef(null);
-    var _d = useSession(), session = _d.data, status = _d.status;
+    var _e = useSession(), session = _e.data, status = _e.status;
     //const [state, formAction, isPending] = useActionState(fn, initialState, permalink?);
     useEffect(function () {
         function initialFetch(chat_id) {
             return __awaiter(this, void 0, void 0, function () {
-                var msgPromise, msgs, eventSource;
+                var msgPromise, msgs;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0: return [4 /*yield*/, fetch('/api/message/current?chat_id=' + chat_id)];
@@ -61,51 +71,49 @@ function Messages(_a) {
                         case 2:
                             msgs = _a.sent();
                             setMessages(msgs.data);
-                            console.log(messages, msgs.data);
-                            if (eventSourceRef.current)
-                                return [2 /*return*/];
-                            eventSource = new EventSource('/api/message/current/update?chat_id=' + chat_id);
-                            eventSourceRef.current = eventSource;
-                            eventSourceRef.current.onmessage = function (event) {
-                                var data = JSON.parse(event.data);
-                                var addedMessage = data;
-                                console.log(messages);
-                                var newMessages = messages.map(function (item) { return item; });
-                                newMessages.push(addedMessage);
-                                setMessages(newMessages);
-                                console.log(newMessages, messages);
-                            };
-                            eventSourceRef.current.onerror = function (error) {
-                                console.log(JSON.stringify(error));
-                                eventSourceRef.current.close();
-                            };
-                            return [2 /*return*/, function () {
-                                    if (eventSourceRef.current) {
-                                        eventSourceRef.current.close();
-                                        eventSourceRef.current = null;
-                                        console.log('Closing EventSource connection');
-                                    }
-                                }];
+                            return [2 /*return*/];
                     }
                 });
             });
         }
         initialFetch(chat_id);
-    }, []);
+        if (eventSourceRef.current)
+            return;
+        var eventSource = new EventSource('/api/message/current/update?chat_id=' + chat_id);
+        eventSourceRef.current = eventSource;
+        eventSourceRef.current.onmessage = function (event) {
+            var data = JSON.parse(event.data);
+            var addedMessage = data;
+            setMessages(function (prevMessages) { return __spreadArray(__spreadArray([], prevMessages, true), [addedMessage], false); });
+        };
+        eventSourceRef.current.onerror = function (error) {
+            console.log(JSON.stringify(error));
+            eventSourceRef.current.close();
+        };
+        return function () {
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+                eventSourceRef.current = null;
+                console.log('Closing EventSource connection');
+            }
+        };
+    }, [chat_id]);
     var router = useRouter();
     useEffect(function () {
         if (status === "unauthenticated") {
             router.push("/api/auth/signin");
         }
     }, [status, router]);
-    /*useEffect(() => {
+    useEffect(function () {
         if (status !== 'loading') {
-            let messageWindow = document.getElementsByClassName('message-list')[0];
-            const messageWindowHeight = messageWindow.scrollHeight;
-            messageWindow.scrollTop = messageWindowHeight;
-            console.log(messageWindowHeight, messageWindow.scrollTop);
+            var messageWindow = document.getElementsByClassName('message-list')[0];
+            if (messageWindow) {
+                var messageWindowHeight = messageWindow.scrollHeight;
+                messageWindow.scrollTop = messageWindowHeight;
+                console.log(messageWindowHeight, messageWindow.scrollTop);
+            }
         }
-    }, [status])*/
+    }, [status]);
     useEffect(function () {
         var _a;
         function handleGetConversationUser(chatId, email) {
@@ -126,7 +134,7 @@ function Messages(_a) {
         }
         ;
         handleGetConversationUser(chat_id, (_a = session === null || session === void 0 ? void 0 : session.user) === null || _a === void 0 ? void 0 : _a.email);
-    }, []);
+    }, [chat_id, (_b = session === null || session === void 0 ? void 0 : session.user) === null || _b === void 0 ? void 0 : _b.email]);
     if (status === 'loading' || !convUser) {
         return <p>Loading session...</p>;
     }
@@ -139,13 +147,15 @@ function Messages(_a) {
                 <div className='message-text'>{messages[index].message}</div>
             </div>);
     });
+    //
     return (<div className='messages'>
-            <h3 className='message-list-header'> Conversation: {convUser === null || convUser === void 0 ? void 0 : convUser.name}
-                <VoipCall userEmail={session.user.email} remoteUserEmail={convUser.email}/>
+                <h3 className='message-list-header'>
+                    Conversation: {convUser === null || convUser === void 0 ? void 0 : convUser.name}
+                    <VoipCallDynamic userEmail={session.user.email} targetUserEmail={convUser.email}/>
                 </h3>
-            <div className='message-list'>
-                {messageList}
-            </div>
-        </div>);
+                <div className='message-list'>
+                    {messageList}
+                </div>
+            </div>);
 }
 export default Messages;

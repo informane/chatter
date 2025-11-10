@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSession, signIn, signOut } from "next-auth/react"
-import Modal from './Modal';
+import Image from 'next/image';
 
 export default function Header() {
 
@@ -26,7 +26,7 @@ export default function Header() {
     if(!email) {
         return (
             <div className='chat-header'>
-                <img src='./logo.png' alt='logo' width={150} height={100}/>
+                <Image src='/logo.png' alt='logo' width={150} height={100}/>
                 <h1>Chat with google users!</h1>
                 <button className='primary-btn' onClick={() => signIn()}>Sign in</button>
             </div>      
@@ -34,7 +34,7 @@ export default function Header() {
     } else {
         return (
             <div className='chat-header'>
-                <img src='./logo.png' alt='logo' width={150} height={100}/>
+                <Image src='/logo.png' alt='logo' width={150} height={100}/>
                 <h1>Chat with google users!</h1>
                 <button className='primary-btn' onClick={() => signOut({ callbackUrl: "/api/auth/signin" })}>Sign out({email}) </button>
             </div>      

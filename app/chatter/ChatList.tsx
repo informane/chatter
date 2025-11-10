@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useActionState, useState, useEffect } from 'react';
 import Search from './Search';
+import Image from 'next/image';
+
 
 function ChatList({ chat_id, onChangeChatId }: ChatterProps) {
     const { data: session, status } = useSession();
@@ -71,12 +73,12 @@ function ChatList({ chat_id, onChangeChatId }: ChatterProps) {
                     Contacts not found!
                 </div>
             );
-
+//<VoipCall userEmail={session.user.email} targetUserEmail={Chats[index].users[0].email} />
         const chatList = Chats.map((value, index) => {
             return (
                 <div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={(e) => chooseChat(Chats[index]._id)}>
-                    <img src={Chats[index].users[0].avatar} height={35} width={35}/>
-                    <span>{Chats[index].users[0].name}</span>
+                    <Image src={Chats[index].users[0].avatar} height={35} width={35} alt={Chats[index].users[0].name}/>
+                    <span>{Chats[index].users[0].name}</span>          
                 </div>
             )
         })

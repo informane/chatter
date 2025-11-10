@@ -11,7 +11,8 @@ import type { Session, User } from '@auth/core/types';
 import { useRouter } from 'next/navigation';
 import { Model } from "mongoose";
 import { useRef } from 'react';
-import VoipCall from './VoipCall';
+import VoipCallDynamic from './VoipCallDynamic';
+
 function Messages({ chat_id }: ChatterProps) {
 
     const [messages, setMessages] = useState([]);
@@ -26,43 +27,40 @@ function Messages({ chat_id }: ChatterProps) {
             const msgPromise = await fetch('/api/message/current?chat_id=' + chat_id);
             const msgs = await msgPromise.json();
             setMessages(msgs.data);
-            console.log(messages, msgs.data);
+            //console.log(messages, msgs.data);
 
-            if (eventSourceRef.current) return;
 
-            const eventSource = new EventSource('/api/message/current/update?chat_id=' + chat_id);
-            eventSourceRef.current = eventSource;
-
-            eventSourceRef.current.onmessage = (event) => {
-
-                const data = JSON.parse(event.data);
-                const addedMessage: Model<IMessageDocument> = data;
-                console.log(messages);
-                const newMessages = messages.map(item => item);
-                newMessages.push(addedMessage);
-                setMessages(newMessages);
-                console.log(newMessages, messages);
-            }
-
-            eventSourceRef.current.onerror = (error) => {
-                console.log(JSON.stringify(error));
-                eventSourceRef.current.close()
-            }
-
-            return () => {
-                if (eventSourceRef.current) {
-                    eventSourceRef.current.close();
-                    eventSourceRef.current = null;
-                    console.log('Closing EventSource connection');
-                }
-            };
         }
 
         initialFetch(chat_id);
 
+        if (eventSourceRef.current) return;
 
+        const eventSource = new EventSource('/api/message/current/update?chat_id=' + chat_id);
+        eventSourceRef.current = eventSource;
 
-    }, []);
+        eventSourceRef.current.onmessage = (event) => {
+
+            const data = JSON.parse(event.data);
+            const addedMessage: Model<IMessageDocument> = data;
+
+            setMessages(prevMessages => [...prevMessages, addedMessage]);
+        }
+
+        eventSourceRef.current.onerror = (error) => {
+            console.log(JSON.stringify(error));
+            eventSourceRef.current.close()
+        }
+
+        return () => {
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+                eventSourceRef.current = null;
+                console.log('Closing EventSource connection');
+            }
+        };
+
+    }, [chat_id]);
 
     const router = useRouter();
     useEffect(() => {
@@ -93,7 +91,7 @@ function Messages({ chat_id }: ChatterProps) {
 
         handleGetConversationUser(chat_id, session?.user?.email)
 
-    }, []);
+    }, [chat_id, session?.user?.email]);
 
 
     if (status === 'loading' || !convUser) {
@@ -111,19 +109,18 @@ function Messages({ chat_id }: ChatterProps) {
             </div>
         )
     })
-
-
-    return (
-        <div className='messages'>
-            <h3 className='message-list-header'>
-                Conversation: {convUser?.name}
-                <VoipCall userEmail={session.user.email} remoteUserEmail={convUser.email} />
-            </h3>
-            <div className='message-list'>
-                {messageList}
+//
+        return (
+            <div className='messages'>
+                <h3 className='message-list-header'>
+                    Conversation: {convUser?.name}
+                    <VoipCallDynamic userEmail={session.user.email} targetUserEmail={convUser.email} />
+                </h3>
+                <div className='message-list'>
+                    {messageList}
+                </div>
             </div>
-        </div>
-    )
+        )
 }
 
 export default Messages;

@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { useSearchParams, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { addToContacts } from "app/lib/chatter";
 import Search from './Search';
@@ -104,7 +105,7 @@ export default function UserSearch() {
             return <p></p>;
         var users = Users.map(function (value, index) {
             return (<div key={Users[index]._id} className='user'>
-                    <img src={Users[index].avatar} alt={Users[index].name}/>
+                    <Image src={Users[index].avatar} alt={Users[index].name}/>
                     <div className="user-details">
                         <div className='user-name'>{Users[index].name}</div>
                         <div className='user-email'>{Users[index].email}</div>

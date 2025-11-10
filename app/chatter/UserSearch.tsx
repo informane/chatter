@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { addToContacts } from "app/lib/chatter";
 import Search from './Search';
 import Modal from './Modal';
-import User from "./models/User";
+
 
 export default function UserSearch() {
     const [Users, setUsers] = useState([]);
@@ -53,7 +53,7 @@ export default function UserSearch() {
         var users = Users.map((value, index) => {
             return (
                 <div key={Users[index]._id} className='user'>
-                    <img src={Users[index].avatar} alt={Users[index].name} />
+                    <Image src={Users[index].avatar} alt={Users[index].name} />
                     <div className="user-details">
                         <div className='user-name'>{Users[index].name}</div>
                         <div className='user-email'>{Users[index].email}</div>
