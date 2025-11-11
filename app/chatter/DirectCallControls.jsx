@@ -35,8 +35,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRTCClient, useIsConnected, LocalUser, RemoteUser, useLocalMicrophoneTrack, usePublish, useRemoteUsers } from 'agora-rtc-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useRTCClient, LocalUser, useLocalMicrophoneTrack, usePublish, useRemoteUsers, } from 'agora-rtc-react';
 import AgoraRTM from 'agora-rtm-sdk';
 // Helper function to generate a consistent channel name for a 1:1 call
 var getDirectChannelName = function (email1, email2) {
@@ -52,55 +52,69 @@ var getUserId = function (email) {
 export default function DirectCallControls(_a) {
     var _this = this;
     var currentUserEmail = _a.currentUserEmail, targetUserEmail = _a.targetUserEmail;
+    var RTM = AgoraRTM.RTM;
     var _b = useState('IDLE'), callState = _b[0], setCallState = _b[1];
-    var _c = useState(''), remoteUserEmail = _c[0], setRemoteUserEmail = _c[1];
-    var _d = useState(null), rtmClient = _d[0], setRtmClient = _d[1];
+    var remoteUserEmail = useState(targetUserEmail)[0];
+    var rtmClient = useRef(null);
     var rtcClient = useRTCClient();
-    var _e = useState(null), userId = _e[0], setUserId = _e[1];
-    var _f = useState(false), calling = _f[0], setCalling = _f[1];
-    var isConnected = useIsConnected(); // Store the user's connection status
-    var _g = useState(process.env.NEXT_PUBLIC_AGORA_APP_ID), appId = _g[0], setAppId = _g[1];
-    var localMicrophoneTrack = useLocalMicrophoneTrack(true).localMicrophoneTrack;
-    usePublish([localMicrophoneTrack]);
+    //const [uid, setUid] = useState(null);
+    var rtcToken = useRef(null);
+    var uid = useRef(null);
+    //const [calling, setCalling] = useState(false);
+    var appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
+    var userId = getUserId(currentUserEmail);
+    var channel = getDirectChannelName(currentUserEmail, targetUserEmail);
     var remoteUsers = useRemoteUsers();
-    // Initialize RTM Client (Signaling)
+    console.log(remoteUsers, currentUserEmail, targetUserEmail);
+    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    var _c = useLocalMicrophoneTrack(true), error = _c.error, isLoading = _c.isLoading, localMicrophoneTrack = _c.localMicrophoneTrack;
+    usePublish([localMicrophoneTrack]);
+    //localMicrophoneTrack.setEnabled(true);
+    var _d = useState(true), isMicMuted = _d[0], setIsMicMuted = _d[1];
+    var toggleMicMute = function () {
+        if (localMicrophoneTrack) {
+            var newMutedState = !isMicMuted;
+            // Use the SDK method to actually mute/unmute the track
+            localMicrophoneTrack.setEnabled(newMutedState);
+            setIsMicMuted(newMutedState); // Update React state for UI
+        }
+    };
+    // Initialize RTM Client (Signaling) and RTC options(Voice Calling)
     useEffect(function () {
-        var initRTM = function () { return __awaiter(_this, void 0, void 0, function () {
-            var RTM, client, response, data;
+        var init = function () { return __awaiter(_this, void 0, void 0, function () {
+            var response, data, client;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        RTM = AgoraRTM.RTM;
-                        // 1. Check if a client already exists in the local state.
-                        if (rtmClient)
-                            return [2 /*return*/]; // Prevents re-running initialization if already set
-                        client = new RTM(appId, getUserId(currentUserEmail));
-                        setRtmClient(client);
-                        return [4 /*yield*/, fetch("/api/token?userId=".concat(encodeURIComponent(getUserId(currentUserEmail))))];
+                    case 0: return [4 /*yield*/, fetch("/api/token?userId=".concat(encodeURIComponent(userId), "&channelName=").concat(encodeURIComponent(channel)))];
                     case 1:
                         response = _a.sent();
                         return [4 /*yield*/, response.json()];
                     case 2:
                         data = _a.sent();
-                        if (!data.rtmToken) {
+                        if (!data.rtmToken || !data.rtcToken) {
                             console.error("Token fetch failed or token is empty.");
                             return [2 /*return*/]; // Stop execution if no token
                         }
-                        setUserId(data.userId);
+                        //setUid(data.numericUId);
+                        rtcToken.current = data.rtcToken;
+                        uid.current = data.numericUid;
+                        console.log(rtcToken.current, uid.current);
+                        client = new RTM(appId, userId);
                         return [4 /*yield*/, client.login({ token: data.rtmToken })];
                     case 3:
                         _a.sent();
-                        // V2 uses the 'message' event on the 'messaging' property
-                        client.addEventListener('message', function (event) {
+                        rtmClient.current = client;
+                        rtmClient.current.addEventListener('message', function (event) {
                             var signal = event.customType;
-                            console.log('peerId:', event.publisher, 'signal:', signal);
                             if (signal === 'CALL_INVITE') {
-                                setRemoteUserEmail(event.publisher);
+                                console.log(event.publisher);
                                 setCallState('RECEIVING_CALL');
+                            }
+                            else if (signal === 'CALL_ANSWERED') {
+                                handleJoin(); //////////////////////////////////////////////////////////////await!!!!!!!!!!?????????????????
                             }
                             else if (signal === 'CALL_END') {
                                 setCallState('IDLE');
-                                setRemoteUserEmail('');
                                 handleLeave();
                             }
                         });
@@ -108,85 +122,64 @@ export default function DirectCallControls(_a) {
                 }
             });
         }); };
-        initRTM();
+        init();
+        //await client.subscribe(getDirectChannelName(currentUserEmail, RemoteUserEmail))
         return function () {
             if (rtmClient) {
                 console.log('rtm logout');
-                rtmClient.logout();
+                rtmClient.current.logout();
             }
         };
-    }, [appId, rtmClient, handleLeave, currentUserEmail]);
-    // RTC Handlers
-    var handleJoin = useCallback(function (channelName, uid) { return __awaiter(_this, void 0, void 0, function () {
-        var response, data;
+    }, []);
+    var handleJoin = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, fetch("/api/token?userId=".concat(encodeURIComponent(getUserId(targetUserEmail)), "&channelName=").concat(encodeURIComponent(getDirectChannelName(currentUserEmail, targetUserEmail))))];
+                case 0:
+                    console.log(appId, channel, rtcToken.current);
+                    return [4 /*yield*/, rtcClient.join(appId, channel, rtcToken.current, uid.current)];
                 case 1:
-                    response = _a.sent();
-                    if (!response.ok) {
-                        console.error("Failed to fetch RTC token");
-                        setCallState('IDLE');
-                        return [2 /*return*/];
-                    }
-                    return [4 /*yield*/, response.json()];
-                case 2:
-                    data = _a.sent();
-                    if (!data.rtcToken || !data.appId) {
-                        console.error("RTC token or App ID missing from API response.");
-                        setCallState('IDLE');
-                        return [2 /*return*/];
-                    }
-                    // Use type assertions to fix type conflicts
-                    return [4 /*yield*/, rtcClient.join(data.appId, channelName, data.rtcToken, uid)];
-                case 3:
-                    // Use type assertions to fix type conflicts
                     _a.sent();
-                    setCallState('IN_CALL');
                     return [2 /*return*/];
             }
         });
-    }); }, [rtcClient, currentUserEmail, targetUserEmail, setCallState]);
+    }); }, []);
     var handleLeave = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         var payload, options;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, rtcClient.leave()];
-                case 1:
-                    _a.sent();
-                    if (!(rtmClient && remoteUserEmail)) return [3 /*break*/, 3];
-                    // Notify the other user the call ended
-                    console.log(remoteUserEmail);
+                case 0:
+                    if (!(callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL')) return [3 /*break*/, 2];
                     payload = "CALL_END";
                     options = {
                         customType: "CALL_END",
                         channelType: "USER",
                     };
-                    return [4 /*yield*/, rtmClient.publish(getUserId(remoteUserEmail), payload, options)];
-                case 2:
+                    return [4 /*yield*/, rtmClient.current.publish(getUserId(remoteUserEmail), payload, options)];
+                case 1:
                     _a.sent();
-                    setCallState('IDLE');
-                    setRemoteUserEmail('');
-                    _a.label = 3;
-                case 3: return [2 /*return*/];
+                    _a.label = 2;
+                case 2:
+                    console.log("CAll state:", callState);
+                    return [4 /*yield*/, rtcClient.leave()];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
             }
         });
-    }); }, [rtcClient, rtmClient, remoteUserEmail]);
+    }); }, [callState]);
     // UI Actions
     var callUser = function (targetEmail) { return __awaiter(_this, void 0, void 0, function () {
         var payload, options;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    //const channelName = getDirectChannelName(currentUserEmail, targetEmail);
-                    setRemoteUserEmail(targetEmail);
                     setCallState('CALLING');
-                    payload = "CALL_INVITE";
+                    payload = 'CALL_INVITE';
                     options = {
                         customType: "CALL_INVITE",
                         channelType: "USER",
                     };
-                    return [4 /*yield*/, rtmClient.publish(getUserId(targetEmail), payload, options)];
+                    return [4 /*yield*/, rtmClient.current.publish(getUserId(targetEmail), payload, options)];
                 case 1:
                     _a.sent();
                     return [2 /*return*/];
@@ -194,34 +187,66 @@ export default function DirectCallControls(_a) {
         });
     }); };
     var answerCall = function () { return __awaiter(_this, void 0, void 0, function () {
-        var response, data, channel;
+        var payload, options;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, fetch("/api/token?userId=".concat(encodeURIComponent(getUserId(targetUserEmail))))];
+                case 0: return [4 /*yield*/, handleJoin()];
                 case 1:
-                    response = _a.sent();
-                    return [4 /*yield*/, response.json()];
+                    _a.sent();
+                    setCallState('IN_CALL');
+                    payload = "CALL_ANSWERED";
+                    options = {
+                        customType: "CALL_ANSWERED",
+                        channelType: "USER",
+                    };
+                    return [4 /*yield*/, rtmClient.current.publish(getUserId(targetUserEmail), payload, options)];
                 case 2:
-                    data = _a.sent();
-                    channel = getDirectChannelName(currentUserEmail, targetUserEmail);
-                    handleJoin(channel, data.numericUid);
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    }); };
+    var cancelCall = function () { return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, handleLeave()];
+                case 1:
+                    _a.sent();
+                    setCallState('IDLE');
                     return [2 /*return*/];
             }
         });
     }); };
     if (callState === 'IN_CALL' || callState == 'CALLING') {
+        console.log("state:" + callState, "users: " + JSON.stringify(remoteUsers));
         return (<div>
                 <p>In call with: {remoteUserEmail}</p>
-                <button onClick={handleLeave}>End Call</button>
+                <button onClick={cancelCall}>End Call</button>
+                <button onClick={toggleMicMute}>
+                    {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
+                </button>
                 {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack}/>}
-                {remoteUsers.map(function (user) { return (<RemoteUser user={user} key={user.uid}/>); })}
+                {/*
+                remoteUsers.map((user) => (
+                    <div key={user.uid} >
+                        {
+                            user._audio_muted_ ? (
+                                <span style={{ color: 'red', marginLeft: '10px' }}>🔇 Muted</span>
+                            ) : (
+                                <span style={{ color: 'green', marginLeft: '10px' }}>🎤 Unmuted</span>
+                            )
+                        }
+                        < RemoteUser user={user}/>
+                    </div>
+                ))
+            */}
             </div>);
     }
     if (callState === 'RECEIVING_CALL') {
         return (<div>
                 <p>Incoming call from: {remoteUserEmail}</p>
                 <button onClick={answerCall}>Answer</button>
-                <button onClick={handleLeave}>Decline</button>
+                <button onClick={cancelCall}>Decline</button>
             </div>);
     }
     // IDLE state (Lobby UI)

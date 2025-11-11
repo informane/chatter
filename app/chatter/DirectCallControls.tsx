@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useEffectEvent } from 'react';
 import {
     useRTCClient,
     useIsConnected,
     LocalUser,
     RemoteUser,
+    useJoin,
     useLocalMicrophoneTrack,
     usePublish,
-    useRemoteUsers
+    useRemoteUsers,
+    useRemoteAudioTracks,
 } from 'agora-rtc-react';
 
 import AgoraRTM from 'agora-rtm-sdk';
@@ -29,142 +31,168 @@ const getUserId = (email: string) => {
 
 export default function DirectCallControls({ currentUserEmail, targetUserEmail }: { currentUserEmail: string, targetUserEmail: string }) {
 
+    const { RTM } = AgoraRTM;
     const [callState, setCallState] = useState<'IDLE' | 'CALLING' | 'RECEIVING_CALL' | 'IN_CALL'>('IDLE');
-    const [remoteUserEmail, setRemoteUserEmail] = useState('');
-    const [rtmClient, setRtmClient] = useState(null);
+    const [remoteUserEmail] = useState(targetUserEmail);
+    const rtmClient = useRef(null);
     const rtcClient = useRTCClient();
-    const [userId, setUserId] = useState(null);
-    const [calling, setCalling] = useState(false);
-    const isConnected = useIsConnected(); // Store the user's connection status
-    const [appId, setAppId] = useState(process.env.NEXT_PUBLIC_AGORA_APP_ID);
-    const { localMicrophoneTrack } = useLocalMicrophoneTrack();
-    usePublish([localMicrophoneTrack]);
+
+    //const [uid, setUid] = useState(null);
+
+    const rtcToken = useRef(null);
+    const uid = useRef(null);
+    //const [calling, setCalling] = useState(false);
+
+    const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
+    const userId = getUserId(currentUserEmail);
+    const channel = getDirectChannelName(currentUserEmail, targetUserEmail);
 
 
     const remoteUsers = useRemoteUsers();
+    console.log(remoteUsers, currentUserEmail, targetUserEmail);
+    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
 
-    // Initialize RTM Client (Signaling)
+    const { error, isLoading, localMicrophoneTrack } = useLocalMicrophoneTrack(true);
+    usePublish([localMicrophoneTrack]);
+    //localMicrophoneTrack.setEnabled(true);
+
+    const [isMicMuted, setIsMicMuted] = useState(true);
+
+    const toggleMicMute = () => {
+        if (localMicrophoneTrack) {
+            const newMutedState = !isMicMuted;
+            // Use the SDK method to actually mute/unmute the track
+            localMicrophoneTrack.setEnabled(newMutedState);
+            setIsMicMuted(newMutedState); // Update React state for UI
+        }
+    };
+    // Initialize RTM Client (Signaling) and RTC options(Voice Calling)
     useEffect(() => {
-        const initRTM = async () => {
-            const { RTM } = AgoraRTM;
 
-            // 1. Check if a client already exists in the local state.
-            if (rtmClient) return; // Prevents re-running initialization if already set
+        const init = async () => {
 
-            const client = new RTM(appId, getUserId(currentUserEmail));
-
-            setRtmClient(client);
-
-            const response = await fetch(`/api/token?userId=${encodeURIComponent(getUserId(currentUserEmail))}`);
+            const response = await fetch(`/api/token?userId=${encodeURIComponent(userId)}&channelName=${encodeURIComponent(channel)}`);
             const data = await response.json();
-            if (!data.rtmToken) {
+            if (!data.rtmToken || !data.rtcToken) {
                 console.error("Token fetch failed or token is empty.");
                 return; // Stop execution if no token
             }
-            setUserId(data.userId);
-            await client.login({ token: data.rtmToken });
+            //setUid(data.numericUId);
+            rtcToken.current = data.rtcToken;
+            uid.current = data.numericUid;
 
-            // V2 uses the 'message' event on the 'messaging' property
-            client.addEventListener('message', event => {
+            console.log(rtcToken.current, uid.current);
+            const client = new RTM(appId, userId);
+            await client.login({ token: data.rtmToken });
+            rtmClient.current = client;
+
+            rtmClient.current.addEventListener('message', (event) => {
                 const signal = event.customType;
-                console.log('peerId:', event.publisher, 'signal:', signal);
+
                 if (signal === 'CALL_INVITE') {
-                    setRemoteUserEmail(event.publisher);
+                    console.log(event.publisher);
                     setCallState('RECEIVING_CALL');
+                } else if (signal === 'CALL_ANSWERED') {
+                    handleJoin();//////////////////////////////////////////////////////////////await!!!!!!!!!!?????????????????
+
                 } else if (signal === 'CALL_END') {
                     setCallState('IDLE');
-                    setRemoteUserEmail('');
                     handleLeave();
                 }
             });
+        }
 
-            //await client.subscribe(getDirectChannelName(currentUserEmail, RemoteUserEmail))
+        init()
 
-        };
-
-        initRTM();
-
+        //await client.subscribe(getDirectChannelName(currentUserEmail, RemoteUserEmail))
         return () => {
             if (rtmClient) {
                 console.log('rtm logout');
-                rtmClient.logout();
+                rtmClient.current.logout();
             }
         };
-    }, [appId, rtmClient, handleLeave, currentUserEmail]);
+    }, []);
 
-    // RTC Handlers
-    const handleJoin = useCallback(async (channelName: string, uid: number) => {
-        const response = await fetch(`/api/token?userId=${encodeURIComponent(getUserId(targetUserEmail))}&channelName=${encodeURIComponent(getDirectChannelName(currentUserEmail, targetUserEmail))}`);
-        if (!response.ok) {
-            console.error("Failed to fetch RTC token");
-            setCallState('IDLE');
-            return;
-        }
-        const data = await response.json();
-        if (!data.rtcToken || !data.appId) {
-            console.error("RTC token or App ID missing from API response.");
-            setCallState('IDLE');
-            return;
-        }
-        // Use type assertions to fix type conflicts
-        await (rtcClient.join as unknown as Function)(data.appId, channelName, data.rtcToken, uid);
-        setCallState('IN_CALL');
-    }, [rtcClient, currentUserEmail, targetUserEmail, setCallState]);
+
+    var handleJoin = useCallback(async () => {
+
+        console.log(appId, channel, rtcToken.current);
+        await rtcClient.join(appId, channel, rtcToken.current, uid.current);
+
+    }, []);
 
     var handleLeave = useCallback(async () => {
-        await rtcClient.leave();
-        if (rtmClient && remoteUserEmail) {
+
+        if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
             // Notify the other user the call ended
-            console.log(remoteUserEmail);
+
             const payload = "CALL_END";
             const options = {
                 customType: "CALL_END",
                 channelType: "USER",
             };
-            await rtmClient.publish(getUserId(remoteUserEmail), payload, options);
-            setCallState('IDLE');
-            setRemoteUserEmail('');
+            await rtmClient.current.publish(getUserId(remoteUserEmail), payload, options);
+
         }
-    }, [rtcClient, rtmClient, remoteUserEmail]);
+        console.log("CAll state:", callState);
+        await rtcClient.leave();
+    }, [callState]);
 
     // UI Actions
     const callUser = async (targetEmail: string) => {
 
-        //const channelName = getDirectChannelName(currentUserEmail, targetEmail);
-        setRemoteUserEmail(targetEmail);
         setCallState('CALLING');
-        const payload = "CALL_INVITE";
+        const payload = 'CALL_INVITE';
         const options = {
             customType: "CALL_INVITE",
             channelType: "USER",
         };
-        await rtmClient.publish(getUserId(targetEmail), payload, options);
+        await rtmClient.current.publish(getUserId(targetEmail), payload, options);
+
     };
 
     const answerCall = async () => {
-        //setChannel(getDirectChannelName(currentUserEmail, RemoteUserEmail));
-        //const response = await fetch(`/api/token?userId=${encodeURIComponent(getUserId(RemoteUserEmail))}&channelName=${channel}`);
-        const response = await fetch(`/api/token?userId=${encodeURIComponent(getUserId(targetUserEmail))}`);
-        const data = await response.json();
-        //setRtcToken(data.rtcToken);
-        //setCalling(true);
-        const channel = getDirectChannelName(currentUserEmail, targetUserEmail);
+        await handleJoin();
+        setCallState('IN_CALL');
 
-        handleJoin(channel, data.numericUid);
+        const payload = "CALL_ANSWERED";
+        const options = {
+            customType: "CALL_ANSWERED",
+            channelType: "USER",
+        }
+        await rtmClient.current.publish(getUserId(targetUserEmail), payload, options);
     };
+
+    const cancelCall = async () => {
+        await handleLeave();
+        setCallState('IDLE');
+    }
 
     if (callState === 'IN_CALL' || callState == 'CALLING') {
 
+        console.log("state:" + callState, "users: " + JSON.stringify(remoteUsers));
         return (
             <div>
                 <p>In call with: {remoteUserEmail}</p>
-                <button onClick={handleLeave}>End Call</button>
+                <button onClick={cancelCall}>End Call</button>
+                <button onClick={toggleMicMute}>
+                    {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
+                </button>
                 {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack} />}
-                {
+                {/*
                     remoteUsers.map((user) => (
-                        <RemoteUser user={user} key={user.uid} />
+                        <div key={user.uid} >
+                            {
+                                user._audio_muted_ ? (
+                                    <span style={{ color: 'red', marginLeft: '10px' }}>🔇 Muted</span>
+                                ) : (
+                                    <span style={{ color: 'green', marginLeft: '10px' }}>🎤 Unmuted</span>
+                                )
+                            }
+                            < RemoteUser user={user}/>
+                        </div>
                     ))
-                }
+                */}
             </div>
         );
     }
@@ -175,7 +203,7 @@ export default function DirectCallControls({ currentUserEmail, targetUserEmail }
             <div>
                 <p>Incoming call from: {remoteUserEmail}</p>
                 <button onClick={answerCall}>Answer</button>
-                <button onClick={handleLeave}>Decline</button>
+                <button onClick={cancelCall}>Decline</button>
             </div>
         );
     }

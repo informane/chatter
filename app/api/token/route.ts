@@ -29,7 +29,7 @@ export async function GET(request) {
   // --- Generate RTC Token ---
   // RTC requires a numeric UID. We derive it from the string userId for consistency.
   // This derivation needs to be consistent everywhere.
-  const numericUid = userId.length % 65535 || 1; // Ensures a non-zero integer UID
+  const numericUid = Math.floor(Math.random() * 65535);  // Ensures a non-zero integer UID
   
   const rtcToken = RtcTokenBuilder.buildTokenWithUid(
     appId, 

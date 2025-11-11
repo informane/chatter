@@ -55,7 +55,7 @@ export function GET(request) {
             currentTimestamp = Math.floor(Date.now() / 1000);
             tokenExpire = currentTimestamp + expirationTimeInSeconds;
             privilegeExpire = currentTimestamp + expirationTimeInSeconds;
-            numericUid = userId.length % 65535 || 1;
+            numericUid = Math.floor(Math.random() * 65535);
             rtcToken = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName || "default", // Channel name is required here
             numericUid, RtcRole.PUBLISHER, tokenExpire);
             rtmToken = RtmTokenBuilder.buildToken(appId, appCertificate, userId, // Must be a legal, non-empty string ID

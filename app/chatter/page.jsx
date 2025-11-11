@@ -10,7 +10,7 @@ export default function Chatter() {
     var _a = useState(null), chatId = _a[0], setChatId = _a[1];
     console.log(chatId);
     if (chatId) {
-        return (<Suspense fallback={<div>Loading search results...</div>}>
+        return (<Suspense fallback={<div>Loading...</div>}>
         <div className='main'>
           <header>
             <Header />
@@ -29,7 +29,7 @@ export default function Chatter() {
       </Suspense>);
     }
     else {
-        return (<Suspense fallback={<div>Loading search results...</div>}>
+        return (<Suspense fallback={<div>Loading...</div>}>
         <div className='main'>
           <header>
             <Header />
