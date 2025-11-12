@@ -50,19 +50,21 @@ export default function DirectCallControls({ currentUserEmail, targetUserEmail }
 
     const remoteUsers = useRemoteUsers();
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
-    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    audioTracks.map((track) => { track.play(); track.setVolume(100) });
 
-    const { error, isLoading, localMicrophoneTrack } = useLocalMicrophoneTrack(true);
+    const { error, isLoading, localMicrophoneTrack } = useLocalMicrophoneTrack();
+    // const audioTrack = useLocalAudioTrack();
     usePublish([localMicrophoneTrack]);
     //localMicrophoneTrack.setEnabled(true);
 
-    const [isMicMuted, setIsMicMuted] = useState(true);
+    const [isMicMuted, setIsMicMuted] = useState(false);
 
     const toggleMicMute = () => {
         if (localMicrophoneTrack) {
+             localMicrophoneTrack.setEnabled(true);
             const newMutedState = !isMicMuted;
-            // Use the SDK method to actually mute/unmute the track
-            localMicrophoneTrack.setEnabled(newMutedState);
+            localMicrophoneTrack.setMuted(newMutedState);
             setIsMicMuted(newMutedState); // Update React state for UI
         }
     };
@@ -179,20 +181,20 @@ export default function DirectCallControls({ currentUserEmail, targetUserEmail }
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>
                 {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack} />}
-                {/*
+                {
                     remoteUsers.map((user) => (
                         <div key={user.uid} >
                             {
                                 user._audio_muted_ ? (
-                                    <span style={{ color: 'red', marginLeft: '10px' }}>🔇 Muted</span>
+                                    <span style={{ color: 'red', marginLeft: '10px' }}>🔇Remote is Muted</span>
                                 ) : (
-                                    <span style={{ color: 'green', marginLeft: '10px' }}>🎤 Unmuted</span>
+                                    <span style={{ color: 'green', marginLeft: '10px' }}>🎤Remote is Unmuted</span>
                                 )
                             }
                             < RemoteUser user={user}/>
                         </div>
                     ))
-                */}
+                }
             </div>
         );
     }

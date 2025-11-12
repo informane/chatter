@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRTCClient, LocalUser, useLocalMicrophoneTrack, usePublish, useRemoteUsers, } from 'agora-rtc-react';
+import { useRTCClient, LocalUser, RemoteUser, useLocalMicrophoneTrack, usePublish, useRemoteUsers, useRemoteAudioTracks, } from 'agora-rtc-react';
 import AgoraRTM from 'agora-rtm-sdk';
 // Helper function to generate a consistent channel name for a 1:1 call
 var getDirectChannelName = function (email1, email2) {
@@ -66,7 +66,7 @@ export default function DirectCallControls(_a) {
     var channel = getDirectChannelName(currentUserEmail, targetUserEmail);
     var remoteUsers = useRemoteUsers();
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
-    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    var audioTracks = useRemoteAudioTracks(remoteUsers).audioTracks;
     var _c = useLocalMicrophoneTrack(true), error = _c.error, isLoading = _c.isLoading, localMicrophoneTrack = _c.localMicrophoneTrack;
     usePublish([localMicrophoneTrack]);
     //localMicrophoneTrack.setEnabled(true);
@@ -226,20 +226,16 @@ export default function DirectCallControls(_a) {
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>
                 {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack}/>}
-                {/*
-                remoteUsers.map((user) => (
-                    <div key={user.uid} >
-                        {
-                            user._audio_muted_ ? (
-                                <span style={{ color: 'red', marginLeft: '10px' }}>🔇 Muted</span>
-                            ) : (
-                                <span style={{ color: 'green', marginLeft: '10px' }}>🎤 Unmuted</span>
-                            )
-                        }
-                        < RemoteUser user={user}/>
-                    </div>
-                ))
-            */}
+                {remoteUsers.map(function (user) { return (<div key={user.uid}>
+                            {/*
+                    user._audio_muted_ ? (
+                        <span style={{ color: 'red', marginLeft: '10px' }}>🔇 Muted</span>
+                    ) : (
+                        <span style={{ color: 'green', marginLeft: '10px' }}>🎤 Unmuted</span>
+                    )
+                */}
+                            <RemoteUser user={user}/>
+                        </div>); })}
             </div>);
     }
     if (callState === 'RECEIVING_CALL') {
