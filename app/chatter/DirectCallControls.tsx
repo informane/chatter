@@ -184,13 +184,13 @@ export default function DirectCallControls({ currentUserEmail, targetUserEmail }
                 {
                     remoteUsers.map((user) => (
                         <div key={user.uid} >
-                            {
+                            {/*
                                 user._audio_muted_ ? (
                                     <span style={{ color: 'red', marginLeft: '10px' }}>🔇Remote is Muted</span>
                                 ) : (
                                     <span style={{ color: 'green', marginLeft: '10px' }}>🎤Remote is Unmuted</span>
                                 )
-                            }
+                            */}
                             < RemoteUser user={user}/>
                         </div>
                     ))
