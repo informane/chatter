@@ -130,7 +130,7 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     const handleSendMessage = async () => {
         if (message.trim() === '' || !chatClient) return;
         try {
-            console.log("msg before db");
+            console.log("msg before db", process.env.NEXT_PUBLIC_BASE_URL);
             const addedMsg = await sendMessage(message, chat_id);
             if (!addedMsg.success) console.log(addedMsg.error);
             console.log("msg db", addedMsg);
