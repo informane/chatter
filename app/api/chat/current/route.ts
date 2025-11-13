@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
                 chat.users.push(currentUser._id);
                 chat.users.push(addingUser._id);
-                chat.name = addingUser.name;
+                chat.name = currentUser.email+"&"+addingUser.email;
                 chat.description = '';
                 await chat.save();
                 currentUser.chats.push(chat);

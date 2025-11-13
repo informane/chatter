@@ -6,7 +6,7 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useActionState, useState, useEffect } from 'react';
 import Search from './Search';
 import Image from 'next/image';
-
+import UserSearch from './UserSearch';
 
 function ChatList({ chat_id, onChangeChatId, shown }: ChatterProps) {
     //if chatlist is shown
@@ -72,9 +72,12 @@ function ChatList({ chat_id, onChangeChatId, shown }: ChatterProps) {
     function renderChatList() {
         if (!Chats.length)
             return (
-                <div className='chat-not-found'>
-                    Contacts not found!
-                </div>
+                <>
+                    <div className='chat-not-found'>
+                        Contacts not found!
+                    </div>
+                    <UserSearch />
+                </>
             );
         //<VoipCall userEmail={session.user.email} targetUserEmail={Chats[index].users[0].email} />
         const chatList = Chats.map((value, index) => {
