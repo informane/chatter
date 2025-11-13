@@ -15,6 +15,7 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     const [error, setError] = useState('');
 
     //agora chat
+    const noMessages = useRef(false)
     const prev_chat_id = useRef(null);
     const appKey = process.env.NEXT_PUBLIC_AGORA_CHAT_APP_KEY;
     const [userId, setUserId] = useState('');//user email without dots and @
@@ -27,12 +28,13 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     const [chatClient, setChatClient] = useState<any>(null);
     const [peerDbUser, setPeerDbUser] = useState({});
     const [AgoraChat, setAgoraChat] = useState(null);
-    var changedChatId;
 
     useEffect(() => {
         if(prev_chat_id.current == null) prev_chat_id.current = chat_id;
         console.log('prev_Chat_id: ', prev_chat_id.current);
+        if(noMessages.current) return;
         if(chat_id !== prev_chat_id.current) { 
+            noMessages.current = false;
             setAgoraChat(null);
             setChatClient(null);
             setUserId('');
@@ -40,7 +42,6 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
             prev_chat_id.current = chat_id;
             return;
         }
-        else changedChatId = false;
 
         //set userId
         if (!userId || status === 'loading') {
@@ -86,6 +87,8 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
             const msgPromise = await fetch('/api/message/current?chat_id=' + chat_id);
             const msgs = await msgPromise.json();
             setMessages(msgs.data);
+            if (!msgs.data.length) noMessages.current = true;
+            else noMessages.current = false;
             //console.log(messages, msgs.data);
         }
         if (!messages.length) initialFetch(chat_id);
@@ -135,7 +138,7 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
 
         return handleLogout;
 
-    }, [appKey, userId, chat_id, prev_chat_id, chatClient, messages]);
+    }, [appKey, userId, chat_id, prev_chat_id, chatClient, messages, noMessages]);
 
 
     //agora chat send a peer-to-peer message.

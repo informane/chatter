@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       var { searchParams } = request.nextUrl;
       var query = searchParams.get('query');
       const UserModel: Model<IUserDocument> = User;
-      if (query) {
+      if (query && query.length) {
 
         const regex = new RegExp(query, 'i');
         UserChatsUsers = await UserModel.findOne({ email: email })
