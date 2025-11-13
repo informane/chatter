@@ -15,6 +15,7 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     const [error, setError] = useState('');
 
     //agora chat
+    const prev_chat_id = useRef(null);
     const appKey = process.env.NEXT_PUBLIC_AGORA_CHAT_APP_KEY;
     const [userId, setUserId] = useState('');//user email without dots and @
     //const [token, setToken] = useState("007eJxTYLicO+0l5ww+23e/7y9LaWo00Jx1OfXBnXOzr8tprdjEdEhFgcHSIiUtLc3IJNU42dLE0DjR0iwtxdQiMTHVPM00ydjY6O0EkcyGQEaG/llfWBgZWBkYgRDEV2FITEw0N04yM9BNSktO1TU0TDPQTUxMTtE1tDQzApqVbGqUnAIAjNQq3Q==");
@@ -26,9 +27,20 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     const [chatClient, setChatClient] = useState<any>(null);
     const [peerDbUser, setPeerDbUser] = useState({});
     const [AgoraChat, setAgoraChat] = useState(null);
-
+    var changedChatId;
 
     useEffect(() => {
+        if(prev_chat_id.current == null) prev_chat_id.current = chat_id;
+        console.log('prev_Chat_id: ', prev_chat_id.current);
+        if(chat_id !== prev_chat_id.current) { 
+            setAgoraChat(null);
+            setChatClient(null);
+            setUserId('');
+            setMessages([]);
+            prev_chat_id.current = chat_id;
+            return;
+        }
+        else changedChatId = false;
 
         //set userId
         if (!userId || status === 'loading') {
@@ -57,8 +69,8 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
 
         };
         if (!chatClient && !AgoraChat) { initAgoraChat(); return; }
+        console.log('chat_id: ', chat_id);
 
-        //set peer vars
         const initAgoraLogin = async () => {
 
             const peerUserJson = await getConversationUser(chat_id, session.user.email);
@@ -123,7 +135,7 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
 
         return handleLogout;
 
-    }, [appKey, userId, chat_id, chatClient, messages]);
+    }, [appKey, userId, chat_id, prev_chat_id, chatClient, messages]);
 
 
     //agora chat send a peer-to-peer message.

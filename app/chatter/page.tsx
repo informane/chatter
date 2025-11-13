@@ -13,7 +13,7 @@ export default function Chatter() {
 
   const { data: session, status } = useSession();
   const [chatId, setChatId] = useState(null);
-  const [chatList, setChatList] = useState([]);
+ /* const [chatList, setChatList] = useState([]);
   //              <Messages chat_id={chatId} onChangeChatId={setChatId} />
   //              <InputMessage chat_id={chatId} onChangeChatId={setChatId} />
 
@@ -29,14 +29,14 @@ export default function Chatter() {
     }
     if (!chatList.length) initialFetch();
 
-  }, [chatList])
+  }, [chatList])*/
 
   if (status === 'loading') {
     return <p>Loading session...</p>;
   }
   if(!session) redirect("/api/auth/signin");
 
-  console.log(chatList)
+  //console.log(chatList)
   /*const chatWindowsMap = chatList.map((value, index) => {
     return (<AgoraMessasgeWrapper shown={chatId == chatList[index]._id} key={chatList[index]._id} chat_id={chatList[index]._id} onChangeChatId={setChatId} />)
   })*/
