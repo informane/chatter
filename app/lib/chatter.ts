@@ -50,7 +50,7 @@ export async function addToContacts(user_id) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            "Cookie": `next-auth.session-token=${sessionToken};path=/;expires=Session`
+            "Cookie": `__Secure-next-auth.session-token=${sessionToken};path=/;expires=Session`
         },
         cache: 'no-store',
         body: ''
@@ -69,7 +69,7 @@ export async function sendMessage(message: string, chat_id: string) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                "Cookie": `next-auth.session-token=${sessionToken};path=/;expires=Session`
+                "Cookie": `__Secure-next-auth.session-token=${sessionToken};path=/;expires=Session`
             },
             cache: 'no-store',
             body: JSON.stringify({ message: message })
