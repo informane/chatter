@@ -132,8 +132,9 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
         try {
             console.log("msg before db");
             const addedMsg = await sendMessage(message, chat_id);
+            if (!addedMsg.success) console.log(addedMsg.error);
             console.log("msg db", addedMsg);
-            if (addedMsg.success) throw new Error('error creating db msg: '+addedMsg.error);
+
             const newMsg = addedMsg.data;
             //let chatType: ChatType = 'singleChat';
             const options = {
