@@ -62,14 +62,14 @@ export async function addToContacts(user_id) {
 
 export async function sendMessage(message: string, chat_id: string) {
     try {
-        /*const cookieStore = await cookies()
+        const cookieStore = await cookies()
         let sessionTokenCookie = cookieStore.get('next-auth.session-token')
-        let sessionToken = sessionTokenCookie.value;*/
+        let sessionToken = sessionTokenCookie.value;
         const addedMessage = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/message/current?chat_id=' + chat_id, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                //"Cookie": `next-auth.session-token=${sessionToken};path=/;expires=Session`
+                "Cookie": `next-auth.session-token=${sessionToken};path=/;expires=Session`
             },
             cache: 'no-store',
             body: JSON.stringify({ message: message })
