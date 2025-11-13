@@ -179,6 +179,7 @@ export function AgoraMessage(_a) {
         }
         initEventListeners();
         scrollDown();
+        return handleLogout;
     }, [appKey, userId, chat_id, chatClient, messages]);
     //agora chat send a peer-to-peer message.
     var handleSendMessage = function () { return __awaiter(_this, void 0, void 0, function () {
@@ -195,6 +196,8 @@ export function AgoraMessage(_a) {
                     return [4 /*yield*/, sendMessage(message, chat_id)];
                 case 2:
                     addedMsg = _a.sent();
+                    if (addedMsg.success)
+                        throw new Error('error creating db msg: ' + addedMsg.error);
                     newMsg_1 = addedMsg.data;
                     options = {
                         chatType: 'singleChat', // Sets the chat type as a one-to-one chat.

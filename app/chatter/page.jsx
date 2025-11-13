@@ -41,6 +41,7 @@ import { useSession } from "next-auth/react";
 import { Suspense, useEffect, useState } from 'react';
 import './styles.scss';
 import AgoraMessasgeWrapper from './AgoraMessageDynamic';
+import { redirect } from 'next/navigation';
 export default function Chatter() {
     var _a = useSession(), session = _a.data, status = _a.status;
     var _b = useState(null), chatId = _b[0], setChatId = _b[1];
@@ -59,51 +60,36 @@ export default function Chatter() {
                             return [4 /*yield*/, chatsPromise.json()];
                         case 2:
                             chats = _a.sent();
-                            setChatList(chats.data);
+                            if (chats.data.length)
+                                setChatList(chats.data);
                             return [2 /*return*/];
                     }
                 });
             });
         }
-        initialFetch();
-    }, []);
+        if (!chatList.length)
+            initialFetch();
+    }, [chatList]);
     if (status === 'loading') {
         return <p>Loading session...</p>;
     }
-    if (!chatList) {
-        return <p>Loading session...</p>;
-    }
+    if (!session)
+        redirect("/api/auth/signin");
     console.log(chatList);
     var chatWindowsMap = chatList.map(function (value, index) {
         return (<AgoraMessasgeWrapper shown={chatId == chatList[index]._id} key={chatList[index]._id} chat_id={chatList[index]._id} onChangeChatId={setChatId}/>);
     });
-    if (chatId) {
-        return (<Suspense fallback={<div>Loading...</div>}>
-        <div className='main'>
-          <header>
-            <Header />
-          </header>
-          <section className='chat-window'>
-            <aside>
-              <ChatList chat_id={chatId} onChangeChatId={setChatId} shown={false}/>
-            </aside>
-            {chatWindowsMap}
-          </section>
-        </div>
-      </Suspense>);
-    }
-    else {
-        return (<Suspense fallback={<div>Loading...</div>}>
-        <div className='main'>
-          <header>
-            <Header />
-          </header>
-          <section className='chat-window'>
-            <aside>
-              <ChatList chat_id={chatId} onChangeChatId={setChatId} shown={true}/>
-            </aside>
-          </section>
-        </div>
-      </Suspense>);
-    }
+    return (<Suspense fallback={<div>Loading...</div>}>
+      <div className='main'>
+        <header>
+          <Header />
+        </header>
+        <section className='chat-window'>
+          <aside>
+            <ChatList chat_id={chatId} onChangeChatId={setChatId} shown={false}/>
+          </aside>
+          {chatWindowsMap}
+        </section>
+      </div>
+    </Suspense>);
 }

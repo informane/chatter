@@ -92,7 +92,7 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
                     console.log(`User Logout!`);
                 },
                 onCustomMessage: (message) => {
-                    console.log(message);
+                    console.log('message: '+message);
                     let messageAlreadySent = false;
                     for (const msg of messages) {
                         if (msg._id === message.ext._id) {
@@ -130,8 +130,10 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     const handleSendMessage = async () => {
         if (message.trim() === '' || !chatClient) return;
         try {
-            console.log(AgoraChat)
+            console.log("msg before db");
             const addedMsg = await sendMessage(message, chat_id);
+            console.log("msg db", addedMsg);
+            if (addedMsg.success) throw new Error('error creating db msg: '+addedMsg.error);
             const newMsg = addedMsg.data;
             //let chatType: ChatType = 'singleChat';
             const options = {
@@ -164,7 +166,6 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
         if (messageWindow) {
             const messageWindowHeight = messageWindow.scrollHeight;
             messageWindow.scrollTop = messageWindowHeight;
-            console.log(messageWindowHeight, messageWindow.scrollTop);
         }
     }
 
