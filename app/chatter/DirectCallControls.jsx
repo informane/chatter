@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRTCClient, LocalUser, RemoteUser, useLocalMicrophoneTrack, usePublish, useRemoteUsers, useRemoteAudioTracks, } from 'agora-rtc-react';
+import { useRTCClient, LocalUser, RemoteUser, useLocalMicrophoneTrack, usePublish, useRemoteUsers, } from 'agora-rtc-react';
 import AgoraRTM from 'agora-rtm-sdk';
 // Helper function to generate a consistent channel name for a 1:1 call
 var getDirectChannelName = function (email1, email2) {
@@ -64,18 +64,18 @@ export default function DirectCallControls(_a) {
     var appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
     var userId = getUserId(currentUserEmail);
     var channel = getDirectChannelName(currentUserEmail, targetUserEmail);
+    var _c = useLocalMicrophoneTrack(), error = _c.error, isLoading = _c.isLoading, localMicrophoneTrack = _c.localMicrophoneTrack;
     var remoteUsers = useRemoteUsers();
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
-    var audioTracks = useRemoteAudioTracks(remoteUsers).audioTracks;
-    var _c = useLocalMicrophoneTrack(true), error = _c.error, isLoading = _c.isLoading, localMicrophoneTrack = _c.localMicrophoneTrack;
+    /*const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    audioTracks.map((track) => { track.play(); track.setVolume(100) });*/
     usePublish([localMicrophoneTrack]);
-    //localMicrophoneTrack.setEnabled(true);
-    var _d = useState(true), isMicMuted = _d[0], setIsMicMuted = _d[1];
+    var _d = useState(false), isMicMuted = _d[0], setIsMicMuted = _d[1];
     var toggleMicMute = function () {
         if (localMicrophoneTrack) {
+            localMicrophoneTrack.setEnabled(true);
             var newMutedState = !isMicMuted;
-            // Use the SDK method to actually mute/unmute the track
-            localMicrophoneTrack.setEnabled(newMutedState);
+            localMicrophoneTrack.setMuted(newMutedState);
             setIsMicMuted(newMutedState); // Update React state for UI
         }
     };
@@ -229,9 +229,9 @@ export default function DirectCallControls(_a) {
                 {remoteUsers.map(function (user) { return (<div key={user.uid}>
                             {/*
                     user._audio_muted_ ? (
-                        <span style={{ color: 'red', marginLeft: '10px' }}>🔇 Muted</span>
+                        <span style={{ color: 'red', marginLeft: '10px' }}>🔇Remote is Muted</span>
                     ) : (
-                        <span style={{ color: 'green', marginLeft: '10px' }}>🎤 Unmuted</span>
+                        <span style={{ color: 'green', marginLeft: '10px' }}>🎤Remote is Unmuted</span>
                     )
                 */}
                             <RemoteUser user={user}/>

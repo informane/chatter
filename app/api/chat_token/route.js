@@ -34,57 +34,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { useState } from 'react';
-import { sendMessage } from 'app/lib/chatter';
-function InputMessage(_a) {
-    var chat_id = _a.chat_id;
-    var _b = useState(''), messageText = _b[0], setMessageText = _b[1];
-    var _c = useState(''), error = _c[0], setError = _c[1];
-    /*async function sendMessageHandler(e) {
-        e.preventDefault();
-
-        const message = e.target.children[0].value;
-        console.log(message);
-        const res = await sendMessage(message, chat_id);
-
-        if(res.success) {
-            setMessageText('');
-            setError('');
-        } else {
-
-            setError(res.error);
-        }
-    }*/
-    function sendMessageHandler(formData) {
-        return __awaiter(this, void 0, void 0, function () {
-            var message, res;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        message = formData.get('message').toString();
-                        console.log(message);
-                        return [4 /*yield*/, sendMessage(message, chat_id)];
-                    case 1:
-                        res = _a.sent();
-                        if (res.success) {
-                            setMessageText('');
-                            setError('');
-                        }
-                        else {
-                            setError(res.error);
-                        }
-                        return [2 /*return*/];
-                }
-            });
+// src/app/api/generate-token/route.js (for App Router)
+import { ChatTokenBuilder } from 'agora-token'; // or RtcTokenBuilder, RtmTokenBuilder
+import { NextResponse } from 'next/server';
+export function POST(request) {
+    return __awaiter(this, void 0, void 0, function () {
+        var userId, appID, appCertificate, expirationTimeInSeconds, currentTime, token;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, request.json()];
+                case 1:
+                    userId = (_a.sent()).userId;
+                    if (!userId) {
+                        return [2 /*return*/, NextResponse.json({ error: 'UserId parameter is required' }, { status: 400 })];
+                    }
+                    appID = process.env.NEXT_PUBLIC_AGORA_APP_ID;
+                    appCertificate = process.env.AGORA_APP_CERTIFICATE;
+                    expirationTimeInSeconds = 3600;
+                    currentTime = Math.floor(Date.now() / 1000);
+                    //const privilegeExpireTime = currentTime + expirationTimeInSeconds;
+                    if (!appID || !appCertificate) {
+                        return [2 /*return*/, NextResponse.json({ error: 'App ID or App Certificate not set' }, { status: 500 })];
+                    }
+                    try {
+                        token = ChatTokenBuilder.buildUserToken(appID, appCertificate, userId, expirationTimeInSeconds);
+                        return [2 /*return*/, NextResponse.json({ token: token, appID: appID })];
+                    }
+                    catch (error) {
+                        return [2 /*return*/, NextResponse.json({ error: 'Failed to generate token' }, { status: 500 })];
+                    }
+                    return [2 /*return*/];
+            }
         });
-    }
-    return (<div className='message-form-wrapper'>
-        <form className='message-form' action={sendMessageHandler} /*method='POST' onSubmit={(e) => handleSendMessage(e)}*/>
-            <textarea name='message' id='message' onChange={function (e) { setMessageText(e.target.value); }} value={messageText}>
-            </textarea>
-            <button type='submit'>Send</button>
-        </form>
-        <div className='error'>{error}</div>
-        </div>);
+    });
 }
-export default InputMessage;

@@ -53,7 +53,7 @@ export default function UserSearch() {
         var users = Users.map((value, index) => {
             return (
                 <div key={Users[index]._id} className='user'>
-                    <Image src={Users[index].avatar} alt={Users[index].name} />
+                    <Image src={Users[index].avatar} alt={Users[index].name}  height={60} width={60}/>
                     <div className="user-details">
                         <div className='user-name'>{Users[index].name}</div>
                         <div className='user-email'>{Users[index].email}</div>

@@ -14,7 +14,7 @@ export default function Modal(props: JSXComponentPropsModal) {
   if (props.isOpen) {
     return (
       createPortal(
-        <>
+        <div className={props.className}>
           <div className='modal-overlay' onClick={onClose}>
           </div>
           <div className='modal'>
@@ -23,7 +23,7 @@ export default function Modal(props: JSXComponentPropsModal) {
               {props.children}
             </div>
           </div>
-        </>,
+        </div>,
         document.body
       )
     )

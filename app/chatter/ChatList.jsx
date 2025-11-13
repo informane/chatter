@@ -42,13 +42,15 @@ import Search from './Search';
 import Image from 'next/image';
 function ChatList(_a) {
     var _b;
-    var chat_id = _a.chat_id, onChangeChatId = _a.onChangeChatId;
-    var _c = useSession(), session = _c.data, status = _c.status;
-    var _d = useState([]), Chats = _d[0], setChats = _d[1];
+    var chat_id = _a.chat_id, onChangeChatId = _a.onChangeChatId, shown = _a.shown;
+    //if chatlist is shown
+    var _c = useState(shown), isShown = _c[0], setIsShown = _c[1];
+    var _d = useSession(), session = _d.data, status = _d.status;
+    var _e = useState([]), Chats = _e[0], setChats = _e[1];
     //const [state, formAction, isPending] = useActionState(addChat, {});
     var searchParams = useSearchParams();
-    var _e = useState((_b = searchParams.get('chat-search')) !== null && _b !== void 0 ? _b : ''), term = _e[0], setTerm = _e[1];
-    var _f = useState({ message: null }), error = _f[0], setError = _f[1];
+    var _f = useState((_b = searchParams.get('chat-search')) !== null && _b !== void 0 ? _b : ''), term = _f[0], setTerm = _f[1];
+    var _g = useState({ message: null }), error = _g[0], setError = _g[1];
     useEffect(function () {
         function initialFetch(term) {
             return __awaiter(this, void 0, void 0, function () {
@@ -96,6 +98,7 @@ function ChatList(_a) {
         return <p>Loading session...</p>;
     }
     function chooseChat(new_chat_id) {
+        setIsShown(false);
         chat_id = new_chat_id;
         onChangeChatId(chat_id);
     }
@@ -108,17 +111,21 @@ function ChatList(_a) {
         var chatList = Chats.map(function (value, index) {
             return (<div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={function (e) { return chooseChat(Chats[index]._id); }}>
                     <Image src={Chats[index].users[0].avatar} height={35} width={35} alt={Chats[index].users[0].name}/>
-                    <span>{Chats[index].users[0].name}</span>          
+                    <span>{Chats[index].users[0].name}</span>
                 </div>);
         });
         return chatList;
     }
-    return (<div className='chats'>
-            <div className='chat-search'>
-                <Search queryVar='chat-search' placeholder='search your contacts' onTermChange={setTerm}/>
-            </div>
-            <div className='chat-list'>
-                {renderChatList()}
+    return (<div className='chat-aside'>
+            <div className={!isShown ? 'aside-show-btn' : 'aside-show-btn hidden'} onClick={function (e) { return (setIsShown(true)); }}>🡂</div>
+            <div className={isShown ? 'aside-hide-btn' : 'aside-hide-btn hidden'} onClick={function (e) { return (setIsShown(false)); }}>🡀</div>
+            <div className={isShown ? 'chat-aside-inner' : 'chat-aside-inner hidden'}>
+                <div className='chat-search'>
+                    <Search queryVar='chat-search' placeholder='search your contacts' onTermChange={setTerm}/>
+                </div>
+                <div className='chat-list'>
+                    {renderChatList()}
+                </div>
             </div>
         </div>);
 }

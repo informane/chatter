@@ -58,7 +58,7 @@ export function GET(request) {
                     searchParams = request.nextUrl.searchParams;
                     query = searchParams.get('query');
                     UserModel = User;
-                    if (!(query.length !== 0 && query)) return [3 /*break*/, 4];
+                    if (!query) return [3 /*break*/, 4];
                     regex = new RegExp(query, 'i');
                     return [4 /*yield*/, UserModel.findOne({ email: email })
                             .populate({

@@ -8,7 +8,9 @@ import Search from './Search';
 import Image from 'next/image';
 
 
-function ChatList({ chat_id, onChangeChatId }: ChatterProps) {
+function ChatList({ chat_id, onChangeChatId, shown }: ChatterProps) {
+    //if chatlist is shown
+    const [isShown, setIsShown] = useState(shown);
     const { data: session, status } = useSession();
     const [Chats, setChats] = useState([]);
     //const [state, formAction, isPending] = useActionState(addChat, {});
@@ -62,6 +64,7 @@ function ChatList({ chat_id, onChangeChatId }: ChatterProps) {
     }
 
     function chooseChat(new_chat_id: string) {
+        setIsShown(false);
         chat_id = new_chat_id;
         onChangeChatId(chat_id);
     }
@@ -73,12 +76,12 @@ function ChatList({ chat_id, onChangeChatId }: ChatterProps) {
                     Contacts not found!
                 </div>
             );
-//<VoipCall userEmail={session.user.email} targetUserEmail={Chats[index].users[0].email} />
+        //<VoipCall userEmail={session.user.email} targetUserEmail={Chats[index].users[0].email} />
         const chatList = Chats.map((value, index) => {
             return (
                 <div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={(e) => chooseChat(Chats[index]._id)}>
-                    <Image src={Chats[index].users[0].avatar} height={35} width={35} alt={Chats[index].users[0].name}/>
-                    <span>{Chats[index].users[0].name}</span>          
+                    <Image src={Chats[index].users[0].avatar} height={35} width={35} alt={Chats[index].users[0].name} />
+                    <span>{Chats[index].users[0].name}</span>
                 </div>
             )
         })
@@ -89,12 +92,16 @@ function ChatList({ chat_id, onChangeChatId }: ChatterProps) {
 
 
     return (
-        <div className='chats'>
-            <div className='chat-search'>
-                <Search queryVar='chat-search' placeholder='search your contacts' onTermChange={setTerm} />
-            </div>
-            <div className='chat-list'>
-                {renderChatList()}
+        <div className='chat-aside'>
+            <div className={!isShown ? 'aside-show-btn' : 'aside-show-btn hidden'} onClick={(e) => (setIsShown(true))}>🡂</div>
+            <div className={isShown ? 'aside-hide-btn' : 'aside-hide-btn hidden'} onClick={(e) => (setIsShown(false))}>🡀</div>
+            <div className={isShown ? 'chat-aside-inner' : 'chat-aside-inner hidden'}>
+                <div className='chat-search'>
+                    <Search queryVar='chat-search' placeholder='search your contacts' onTermChange={setTerm} />
+                </div>
+                <div className='chat-list'>
+                    {renderChatList()}
+                </div>
             </div>
         </div>
     )

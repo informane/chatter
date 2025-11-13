@@ -18,6 +18,30 @@ $primary-btn-color: lightgray;
     box-shadow: 1px 3px 3px gray;
 }
 
+@mixin btn-primary ($color) {
+    background-color: $color;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    border: 1px solid gray;
+    box-shadow: 1px 3px 3px gray;
+}
+
+@mixin menu-el ($bg-color, $color) {
+
+    background-color: $bg-color;
+    color: $color;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+    border: 1px solid gray;
+
+}
+
 @mixin input-primary {
     /*border-radius: 6px;*/
     height: 34px;
@@ -78,6 +102,7 @@ body {
         @media(max-width: 600px) {
             flex-direction: column;
             gap: 15px;
+
         }
 
         h1 {
@@ -85,11 +110,55 @@ body {
             color: rgb(240, 28, 28)
         }
 
-        button {
+    }
+
+    .menu {
+        .menu-btn {
             height: 40px;
             padding: 5px 15px;
             font-size: 12px;
             @include btn-primary($primary-btn-color);
+        }
+
+        .modal {
+            .modal-inner {
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                margin-top: 15px;
+
+                button {
+                    width: 100%;
+                    @include menu-el (darkblue, white);
+
+                    &:hover {
+                        background-color: white;
+                        color: rgb(9, 134, 175);
+                    }
+                }
+            }
+        }
+
+    }
+
+    .users-add {
+
+        h2 {
+            font-size: 16px;
+            text-align: center;
+        }
+
+        input {
+            @include input-primary();
+        }
+
+        button {
+            width: 100%;
+            @include btn-primary($primary-btn-color);
+            cursor: pointer;
+
+
         }
     }
 
@@ -99,12 +168,40 @@ body {
         flex: 1;
         background-color: rgb(20, 144, 20);
 
+        @media(max-width: 600px) {
+            max-height: calc(100% - 250px);
+        }
+
         aside {
             /*border-right: 3px solid gray;
             box-shadow: inset 3px 3px 3px darkgray;*/
+            position: relative;
+            .chat-aside {
+                position: relative;
 
-            .chats {
+                @media(max-width: 450px) {
+                    position: absolute;
+                    z-index: 1;
+                }
+
                 /*background-color: rgb(136, 190, 136);*/
+                .chat-aside-inner.hidden {
+                    display: none;
+                }
+
+                .aside-show-btn,
+                .aside-hide-btn {
+                    @include btn-primary(blue);
+                    position: absolute;
+                    top: -80;
+                    font-size: 40px;
+                    color: wheat;
+                    cursor: pointer;
+
+                    &.hidden {
+                        display: none;
+                    }
+                }
 
                 input {
                     @include input-primary;
@@ -146,25 +243,8 @@ body {
             }
         }
 
-        .users-add {
-
-            h2 {
-                font-size: 16px;
-                text-align: center;
-            }
-
-            input {
-                @include input-primary();
-            }
-
-            button {
-                width: 100%;
-                @include btn-primary($primary-btn-color);
-                cursor: pointer;
-            }
-        }
-
         article {
+            padding-bottom: 15px;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -186,12 +266,12 @@ body {
 
             .messages {
                 flex: 1;
-                height: calc(100% - 82px);
+                height: calc(100% - 95px);
 
                 .message-list {
 
                     overflow-y: scroll;
-                    height: calc(100% - 64px);
+                    height: 100%;
 
                     .message {
                         padding: 15px;
@@ -207,25 +287,34 @@ body {
             }
         }
 
-        .message-form {
+        .message-form-wrapper {
             background-color: $header-color;
-            width: 100%;
-            padding: 15px;
-            display: flex;
-            gap: 10px;
 
-            textarea {
-                resize: none;
-                @include input-primary();
-                flex: 1;
-                height: 50px;
+            .message-form {
+                width: 100%;
+                padding: 25px 15px 0;
+                display: flex;
+                gap: 10px;
+
+                textarea {
+                    resize: none;
+                    @include input-primary();
+                    flex: 1;
+                    height: 50px;
+                }
+
+                button {
+                    @include btn-primary($primary-btn-color);
+                    color: blue;
+                    padding: 15px;
+
+                }
             }
 
-            button {
-                @include btn-primary($primary-btn-color);
-                color: blue;
-                padding: 15px;
-
+            .error {
+                padding: 5px 20px;
+                margin: 0;
+                height: 30px;
             }
         }
     }

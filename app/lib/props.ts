@@ -1,7 +1,8 @@
 
 export interface ChatterProps {
     chat_id: string,
-    onChangeChatId: Function
+    onChangeChatId: Function,
+    shown?: boolean
 }
 
 export interface JSXComponentProps {
@@ -12,4 +13,5 @@ export interface JSXComponentPropsModal {
   children: React.ReactNode; 
   isOpen: boolean;
   onClose: Function;
+  className?: string;
 }

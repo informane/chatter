@@ -82,11 +82,11 @@ export function GET(request) {
 }
 export function POST(request) {
     return __awaiter(this, void 0, void 0, function () {
-        var body, searchParams, chat_id, email, UserModel, currentUser, user_id, MessageModel, message, error_2;
+        var body, searchParams, chat_id, email, UserModel, currentUser, user_id, MessageModel, messageAdded, message, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 6, , 7]);
+                    _a.trys.push([0, 7, , 8]);
                     return [4 /*yield*/, dbConnect()];
                 case 1:
                     _a.sent();
@@ -114,12 +114,15 @@ export function POST(request) {
                     MessageModel = Message;
                     return [4 /*yield*/, MessageModel.create(__assign(__assign({}, body), { chat: chat_id, user: user_id }))];
                 case 5:
+                    messageAdded = _a.sent();
+                    return [4 /*yield*/, MessageModel.findById(messageAdded._id).populate('user')];
+                case 6:
                     message = _a.sent();
                     return [2 /*return*/, NextResponse.json({ success: true, data: message }, { status: 200 })];
-                case 6:
+                case 7:
                     error_2 = _a.sent();
                     return [2 /*return*/, NextResponse.json({ success: false, error: error_2.message }, { status: 400 })];
-                case 7: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });

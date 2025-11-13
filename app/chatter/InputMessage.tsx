@@ -37,14 +37,18 @@ function InputMessage({chat_id}: ChatterProps) {
         }
 
     }
+
+    
     return (
+        <div className='message-form-wrapper'>
         <form className='message-form' action={sendMessageHandler} /*method='POST' onSubmit={(e) => handleSendMessage(e)}*/>
             <textarea name='message' id='message' onChange={(e)=> {setMessageText(e.target.value)}} value={messageText}>
-                
             </textarea>
-            <span>{error}</span>
             <button type='submit'>Send</button>
         </form>
+        <div className='error'>{error}</div>
+        </div>
+        
     )
 }
 

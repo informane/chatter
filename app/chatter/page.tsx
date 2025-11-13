@@ -2,19 +2,47 @@
 
 import Header from './Header';
 import ChatList from './ChatList';
-import Messages from './Messages';
-import InputMessage from "./InputMessage";
+import AgoraMessageWrapper from './AgoraMessageDynamic'
+import { useSession, signIn, signOut } from "next-auth/react"
 import { Suspense, useEffect, useState } from 'react';
 import './styles.scss';
-import { useSearchParams } from 'next/navigation';
-import UserSearch from './UserSearch';
+import AgoraMessasgeWrapper from './AgoraMessageDynamic';
 
 export default function Chatter() {
 
+  const { data: session, status } = useSession();
   const [chatId, setChatId] = useState(null);
+  const [chatList, setChatList] = useState([]);
+  //              <Messages chat_id={chatId} onChangeChatId={setChatId} />
+  //              <InputMessage chat_id={chatId} onChangeChatId={setChatId} />
+
+  useEffect(() => {
+
+    async function initialFetch() {
+
+      const chatsPromise = await fetch('/api/chat/current');
+      const chats = await chatsPromise.json();
+      setChatList(chats.data);
+
+    }
+    initialFetch();
+
+  }, [])
+
+  if (status === 'loading') {
+    return <p>Loading session...</p>;
+  }
+
+  if (!chatList) {
+    return <p>Loading session...</p>;
+  }
+
+console.log(chatList)
+  const chatWindowsMap = chatList.map((value, index) => {
+    return (<AgoraMessasgeWrapper shown={chatId == chatList[index]._id} key={chatList[index]._id} chat_id={chatList[index]._id} onChangeChatId={setChatId} />)
+  })
 
 
-  console.log(chatId);
   if (chatId) {
 
     return (
@@ -25,13 +53,9 @@ export default function Chatter() {
           </header>
           <section className='chat-window'>
             <aside>
-              <UserSearch />
-              <ChatList chat_id={chatId} onChangeChatId={setChatId} />
+              <ChatList chat_id={chatId} onChangeChatId={setChatId} shown={false} />
             </aside>
-            <article>
-              <Messages chat_id={chatId} onChangeChatId={setChatId} />
-              <InputMessage chat_id={chatId} onChangeChatId={setChatId} />
-            </article>
+            {chatWindowsMap}
           </section>
         </div>
       </Suspense>
@@ -46,8 +70,7 @@ export default function Chatter() {
           </header>
           <section className='chat-window'>
             <aside>
-              <UserSearch />
-              <ChatList chat_id={chatId} onChangeChatId={setChatId} />
+              <ChatList chat_id={chatId} onChangeChatId={setChatId} shown={true} />
             </aside>
           </section>
         </div>

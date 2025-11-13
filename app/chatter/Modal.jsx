@@ -4,7 +4,7 @@ export default function Modal(props) {
         props.onClose();
     };
     if (props.isOpen) {
-        return (createPortal(<>
+        return (createPortal(<div className={props.className}>
           <div className='modal-overlay' onClick={onClose}>
           </div>
           <div className='modal'>
@@ -13,6 +13,6 @@ export default function Modal(props) {
               {props.children}
             </div>
           </div>
-        </>, document.body));
+        </div>, document.body));
     }
 }

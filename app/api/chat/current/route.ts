@@ -18,20 +18,18 @@ export async function GET(request: NextRequest) {
       var { searchParams } = request.nextUrl;
       var query = searchParams.get('query');
       const UserModel: Model<IUserDocument> = User;
-
-      if (query.length !== 0 && query) {
+      if (query) {
 
         const regex = new RegExp(query, 'i');
         UserChatsUsers = await UserModel.findOne({ email: email })
           .populate<{ chats: [IChatDocument] }>({
             path: 'chats',
-            match: {name: regex},
+            match: { name: regex },
             populate: {
               path: 'users',
-              match: {$and: [{ email: { $ne: email } }, { $or: [{ email: regex }, { name: regex }, { description: regex }] }] }
+              match: { $and: [{ email: { $ne: email } }, { $or: [{ email: regex }, { name: regex }, { description: regex }] }] }
             }
           })
-
       } else {
         UserChatsUsers = await UserModel.findOne({ email: email })
           .populate<{ chats: [IChatDocument] }>({
@@ -45,16 +43,16 @@ export async function GET(request: NextRequest) {
 
       if (UserChatsUsers.chats.length) {
         //if(UserChatsUsers.chats.users) {
-          data = UserChatsUsers.chats;
+        data = UserChatsUsers.chats;
         //} else error = { status: true, message: 'chats for this user not found: ' + email }
       } else error = { status: true, message: 'chats for this user with given criteria not found: ' + email }
     } else error = { status: true, message: 'empty email: ' + email };
 
-    if (error.status)     
+    if (error.status)
       return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 200 }
-    )
+        { success: false, error: error.message },
+        { status: 200 }
+      )
 
     return NextResponse.json(
       { success: true, data: data },

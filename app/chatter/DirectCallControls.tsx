@@ -14,6 +14,7 @@ import {
 } from 'agora-rtc-react';
 
 import AgoraRTM from 'agora-rtm-sdk';
+import AgoraChat from "agora-chat";
 
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1: string, email2: string) => {
@@ -47,16 +48,15 @@ export default function DirectCallControls({ currentUserEmail, targetUserEmail }
     const userId = getUserId(currentUserEmail);
     const channel = getDirectChannelName(currentUserEmail, targetUserEmail);
 
-
+    const { error, isLoading, localMicrophoneTrack } = useLocalMicrophoneTrack();
     const remoteUsers = useRemoteUsers();
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
-    const { audioTracks } = useRemoteAudioTracks(remoteUsers);
-    audioTracks.map((track) => { track.play(); track.setVolume(100) });
+    /*const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    audioTracks.map((track) => { track.play(); track.setVolume(100) });*/
 
-    const { error, isLoading, localMicrophoneTrack } = useLocalMicrophoneTrack();
-    // const audioTrack = useLocalAudioTrack();
+
+
     usePublish([localMicrophoneTrack]);
-    //localMicrophoneTrack.setEnabled(true);
 
     const [isMicMuted, setIsMicMuted] = useState(false);
 
