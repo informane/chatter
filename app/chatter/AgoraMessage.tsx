@@ -121,6 +121,8 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
 
         scrollDown();
 
+        return handleLogout;
+
     }, [appKey, userId, chat_id, chatClient, messages]);
 
 
