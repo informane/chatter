@@ -37,9 +37,9 @@ export default function Chatter() {
   if(!session) redirect("/api/auth/signin");
 
   console.log(chatList)
-  const chatWindowsMap = chatList.map((value, index) => {
+  /*const chatWindowsMap = chatList.map((value, index) => {
     return (<AgoraMessasgeWrapper shown={chatId == chatList[index]._id} key={chatList[index]._id} chat_id={chatList[index]._id} onChangeChatId={setChatId} />)
-  })
+  })*/
 
 
 
@@ -53,7 +53,8 @@ export default function Chatter() {
           <aside>
             <ChatList chat_id={chatId} onChangeChatId={setChatId} shown={false} />
           </aside>
-          {chatWindowsMap}
+          {/*chatWindowsMap*/}
+          {chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />}
         </section>
       </div>
     </Suspense>
