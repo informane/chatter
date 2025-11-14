@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import { Document } from 'mongodb';
 export interface IUser {
-  google_id: mongoose.Schema.Types.ObjectId;
-  chats: mongoose.Schema.Types.ObjectId[];
+  google_id: Number;
+  chats: [mongoose.Schema.Types.ObjectId];
   name: string;
   email: string;
   avatar?: string;
