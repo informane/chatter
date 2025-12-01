@@ -16,7 +16,7 @@ import {
 } from 'agora-rtc-react';
 
 import AgoraRTM from 'agora-rtm-sdk';
-import AgoraRTC from 'agora-rtc-sdk-ng';
+import AgoraRTC, { ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
 import AgoraChat from "agora-chat";
 
 // Helper function to generate a consistent channel name for a 1:1 call
@@ -51,8 +51,10 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     const userId = getUserId(currentUserEmail);
     const channel = getDirectChannelName(currentUserEmail, targetUserEmail);
 
-    const { error, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
-    const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
+    /*const { error, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
+    const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();*/
+    const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
+    const localVideoTrack = useRef<ICameraVideoTrack | null>(null);
     const remoteUsers = useRemoteUsers();
 
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
@@ -124,8 +126,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
-        while (isLoadingCam || isLoadingMic) { }
-        await rtcClient.publish([localMicrophoneTrack, localCameraTrack]);
+
+        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+        localAudioTrack.current = audioTrack;
+        localVideoTrack.current = videoTrack;
+        //while (isLoadingCam || isLoadingMic) { }
+        await rtcClient.publish([localAudioTrack.current, localVideoTrack.current]);
         console.log("Publish success!");
     }, []);
 
@@ -185,11 +191,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             <div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
                 <button onClick={cancelCall}>End Call</button>
+
                 {/*<button onClick={toggleMicMute}>
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>*/}
-                {localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true} />}
-                {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack} />}
+                {/*localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true} />}
+                {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack} />*/}
                 {
                     remoteUsers.map((user) => (
                         <div key={user.uid} >
