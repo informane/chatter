@@ -120,21 +120,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     }, []);
 
 
-    /* var handleJoin = async function () {
-         useJoin({
-             appid: appId,
-             channel: channel,
-             token: rtcToken.current,
-             uid: uid.current
-         });
-     }*/
-
     var handleJoin = useCallback(async () => {
 
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
         while (isLoadingCam || isLoadingMic) { }
-        await rtcClient.publish([/*localMicrophoneTrack, */localCameraTrack]);
+        await rtcClient.publish([localMicrophoneTrack, localCameraTrack]);
         console.log("Publish success!");
     }, []);
 
