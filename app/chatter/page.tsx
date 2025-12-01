@@ -28,8 +28,10 @@ export default function Chatter() {
 
       const chatsPromise = await fetch('/api/chat/current');
       const chats = await chatsPromise.json();
-      if(chats.data) if (chats.data.length) setChatList(chats.data);
-      console.log(chats.data)
+      if(chats.data) if (chats.data.length) {
+        setChatList(chats.data);
+        //console.log('page.tsx chatList:', chats.data);
+      }
 
     }
     if (!chatList.length) initialFetch();

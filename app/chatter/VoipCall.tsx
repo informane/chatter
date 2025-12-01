@@ -16,6 +16,7 @@ import {
 } from 'agora-rtc-react';
 
 import AgoraRTM from 'agora-rtm-sdk';
+import AgoraRTC from 'agora-rtc-sdk-ng';
 import AgoraChat from "agora-chat";
 
 // Helper function to generate a consistent channel name for a 1:1 call
@@ -52,25 +53,27 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     const { error, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
     const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
+    const agoraClient = useRTCClient();
     const remoteUsers = useRemoteUsers();
+
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
     const { audioTracks } = useRemoteAudioTracks(remoteUsers);
-    audioTracks.map((track) => { track.play(); track.setVolume(100) });
+    //audioTracks.map((track) => { track.play(); track.setVolume(100) });
 
 
 
-    usePublish([localMicrophoneTrack, localCameraTrack]);
+    //usePublish([localMicrophoneTrack, localCameraTrack]);
 
     const [isMicMuted, setIsMicMuted] = useState(false);
 
-    const toggleMicMute = () => {
+    /*const toggleMicMute = () => {
         if (localMicrophoneTrack) {
             localMicrophoneTrack.setEnabled(true);
             const newMutedState = !isMicMuted;
             localMicrophoneTrack.setMuted(newMutedState);
             setIsMicMuted(newMutedState); // Update React state for UI
         }
-    };
+    };*/
     // Initialize RTM Client (Signaling) and RTC options(Voice Calling)
     useEffect(() => {
 
@@ -118,19 +121,21 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     }, []);
 
 
-   /* var handleJoin = async function () {
-        useJoin({
-            appid: appId,
-            channel: channel,
-            token: rtcToken.current,
-            uid: uid.current
-        });
-    }*/
+    /* var handleJoin = async function () {
+         useJoin({
+             appid: appId,
+             channel: channel,
+             token: rtcToken.current,
+             uid: uid.current
+         });
+     }*/
 
     var handleJoin = useCallback(async () => {
 
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
+        while (isLoadingCam || isLoadingMic) {}
+        await agoraClient.publish([localMicrophoneTrack, localCameraTrack]);
 
     }, []);
 
@@ -174,6 +179,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             channelType: "USER",
         }
         await rtmClient.current.publish(getUserId(targetUserEmail), payload, options);
+
+        console.log("Publish success!");
     };
 
     const cancelCall = async () => {
@@ -183,18 +190,15 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     if (callState === 'IN_CALL' || callState == 'CALLING') {
 
-        console.log("state:" + callState, "users: " + JSON.stringify(remoteUsers));
+        //if (!isLoadingCam && !isLoadingMic) 
         return (
             <div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
                 <button onClick={cancelCall}>End Call</button>
-                <button onClick={toggleMicMute}>
+                {/*<button onClick={toggleMicMute}>
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
-                </button>
-                <LocalVideoTrack
-                    track={localCameraTrack}
-                    play={true}
-                />
+                </button>*/}
+                {localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true} />}
                 {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack} />}
                 {
                     remoteUsers.map((user) => (
@@ -206,7 +210,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                                     <span style={{ color: 'green', marginLeft: '10px' }}>🎤Remote is Unmuted</span>
                                 )
                             */}
-                            < RemoteUser user={user} />
+                            <RemoteUser user={user} key={user.uid} />
+                            <p>User UID: {user.uid}</p>
                         </div>
                     ))
                 }
