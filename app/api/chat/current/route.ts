@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSessionEmail, getUserModel } from '../../../lib/chatter';
 import User, { IUser, IUserDocument } from 'app/chatter/models/User';
 
+import Message, { IMessageDocument } from 'app/chatter/models/Message';
+
 export async function GET(request: NextRequest) {
 
   try {
@@ -43,7 +45,9 @@ export async function GET(request: NextRequest) {
 
       if (UserChatsUsers.chats.length) {
         //if(UserChatsUsers.chats.users) {
-        data = UserChatsUsers.chats;
+        data = await getMessageCountByChatsArray(UserChatsUsers.chats)
+        //throw new Error(JSON.stringify(data)); 
+        //data = UserChatsUsers.chats
         //} else error = { status: true, message: 'chats for this user not found: ' + email }
       } else error = { status: true, message: 'chats for this user with given criteria not found: ' + email }
     } else error = { status: true, message: 'empty email: ' + email };
@@ -66,6 +70,40 @@ export async function GET(request: NextRequest) {
     );
   }
 
+}
+
+async function getMessageCountByChatsArray(chats) {
+
+
+  const MessageModel: Model<IMessageDocument> = Message;
+
+  let groupedMessages = await MessageModel.aggregate([
+    {
+      $match: {
+        status: 'unread',
+      }
+    },
+    {
+      $group: {
+        _id: '$chat',
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+ 
+//throw new Error(JSON.stringify(groupedMessages));
+  for (let [i, chat] of chats.entries()) {
+    //throw new Error(JSON.stringify(chat));  
+    for (let msg of groupedMessages) {
+
+      if(chat._id == msg._id) {
+        //throw new Error(JSON.stringify(msg)+':'+JSON.stringify(chat));  
+        chats[i].unreadCount = msg.count
+      };
+    }
+  }
+      //throw new Error(JSON.stringify(groupedMessages)+':'+JSON.stringify(chats));  
+  return chats;
 }
 
 export async function POST(request: NextRequest) {
@@ -98,7 +136,7 @@ export async function POST(request: NextRequest) {
 
                 chat.users.push(currentUser._id);
                 chat.users.push(addingUser._id);
-                chat.name = currentUser.email+"&"+addingUser.email;
+                chat.name = currentUser.email + "&" + addingUser.email;
                 chat.description = '';
                 await chat.save();
                 currentUser.chats.push(chat);

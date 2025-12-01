@@ -34,12 +34,28 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 import { useState } from 'react';
 import { sendMessage } from 'app/lib/chatter';
 function InputMessage(_a) {
     var chat_id = _a.chat_id;
-    var _b = useState(''), messageText = _b[0], setMessageText = _b[1];
-    var _c = useState(''), error = _c[0], setError = _c[1];
+    var _b = __read(useState(''), 2), messageText = _b[0], setMessageText = _b[1];
+    var _c = __read(useState(''), 2), error = _c[0], setError = _c[1];
     /*async function sendMessageHandler(e) {
         e.preventDefault();
 

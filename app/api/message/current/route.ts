@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     const user_id = currentUser._id;
     const MessageModel: Model<IMessageDocument> = Message;
 
-    var messageAdded = await MessageModel.create({ ...body, chat: chat_id, user: user_id });
+    var messageAdded = await MessageModel.create({ ...body, status: 'unread', chat: chat_id, user: user_id });
     const message = await MessageModel.findById(messageAdded._id).populate('user');
 
     return NextResponse.json(

@@ -112,7 +112,7 @@ export function POST(request) {
                         throw new Error('cant find current user!');
                     user_id = currentUser._id;
                     MessageModel = Message;
-                    return [4 /*yield*/, MessageModel.create(__assign(__assign({}, body), { chat: chat_id, user: user_id }))];
+                    return [4 /*yield*/, MessageModel.create(__assign(__assign({}, body), { status: 'unread', chat: chat_id, user: user_id }))];
                 case 5:
                     messageAdded = _a.sent();
                     return [4 /*yield*/, MessageModel.findById(messageAdded._id).populate('user')];

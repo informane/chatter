@@ -35,6 +35,22 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -49,12 +65,11 @@ import { getConversationUser } from '../lib/chatter';
 import { useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
-import VoipCallDynamic from './VoipCallDynamic';
 function Messages(_a) {
     var _b;
     var chat_id = _a.chat_id;
-    var _c = useState([]), messages = _c[0], setMessages = _c[1];
-    var _d = useState(null), convUser = _d[0], setConvUser = _d[1];
+    var _c = __read(useState([]), 2), messages = _c[0], setMessages = _c[1];
+    var _d = __read(useState(null), 2), convUser = _d[0], setConvUser = _d[1];
     var eventSourceRef = useRef(null);
     var _e = useSession(), session = _e.data, status = _e.status;
     //const [state, formAction, isPending] = useActionState(fn, initialState, permalink?);
@@ -84,7 +99,7 @@ function Messages(_a) {
         eventSourceRef.current.onmessage = function (event) {
             var data = JSON.parse(event.data);
             var addedMessage = data;
-            setMessages(function (prevMessages) { return __spreadArray(__spreadArray([], prevMessages, true), [addedMessage], false); });
+            setMessages(function (prevMessages) { return __spreadArray(__spreadArray([], __read(prevMessages), false), [addedMessage], false); });
         };
         eventSourceRef.current.onerror = function (error) {
             console.log(JSON.stringify(error));
@@ -147,11 +162,11 @@ function Messages(_a) {
                 <div className='message-text'>{messages[index].message}</div>
             </div>);
     });
-    //
+    //<VoipCallDynamic userEmail={session.user.email} targetUserEmail={convUser.email} />
     return (<div className='messages'>
                 <h3 className='message-list-header'>
                     Conversation: {convUser === null || convUser === void 0 ? void 0 : convUser.name}
-                    <VoipCallDynamic userEmail={session.user.email} targetUserEmail={convUser.email}/>
+                    
                 </h3>
                 <div className='message-list'>
                     {messageList}

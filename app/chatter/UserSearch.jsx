@@ -35,22 +35,39 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 import { useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { addToContacts } from "app/lib/chatter";
 import Search from './Search';
 import Modal from './Modal';
-export default function UserSearch() {
+export default function UserSearch(_a) {
     var _this = this;
-    var _a;
-    var _b = useState([]), Users = _b[0], setUsers = _b[1];
-    var _c = useState({ message: null }), error = _c[0], setError = _c[1];
-    var _d = useState({ message: null }), success = _d[0], setSuccess = _d[1];
+    var _b;
+    var onUpdateChatList = _a.onUpdateChatList;
+    var _c = __read(useState([]), 2), Users = _c[0], setUsers = _c[1];
+    var _d = __read(useState({ message: null }), 2), error = _d[0], setError = _d[1];
+    var _e = __read(useState({ message: null }), 2), success = _e[0], setSuccess = _e[1];
     var searchParams = useSearchParams();
     var pathname = usePathname();
-    var _e = useState((_a = searchParams.get('contact-search')) !== null && _a !== void 0 ? _a : ''), term = _e[0], setTerm = _e[1];
-    var _f = useState(false), modalSearchIsOpen = _f[0], setModalSearchIsOpen = _f[1];
+    var _f = __read(useState((_b = searchParams.get('contact-search')) !== null && _b !== void 0 ? _b : ''), 2), term = _f[0], setTerm = _f[1];
+    var _g = __read(useState(false), 2), modalSearchIsOpen = _g[0], setModalSearchIsOpen = _g[1];
     useEffect(function () {
         var searchUsers = function (term) { return __awaiter(_this, void 0, void 0, function () {
             var promise, Users_1;
@@ -94,6 +111,7 @@ export default function UserSearch() {
                         else {
                             setSuccess({ message: "Successfull added to contacts!" });
                             setError({ message: null });
+                            onUpdateChatList(true);
                         }
                         return [2 /*return*/];
                 }

@@ -2,7 +2,7 @@ import dbConnect from '../../../lib/mongodb';
 import User, {IUser} from '../../../chatter/models/User';
 import Message, {IMessage} from '../../../chatter/models/Message';
 import {Model} from 'mongoose';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export default async function GET(request: NextRequest) {
 
@@ -75,14 +75,13 @@ export async function PUT(request: NextRequest) {
     var MessageInstance = Message as Model<IMessage>;
     var message = await MessageInstance.findByIdAndUpdate(id, body);
 
-    return new Response(
-      JSON.stringify({ success: true, data: message }),
+    return NextResponse.json(
+      { success: true, data: message },
       { status: 200 }
     )
-
   } catch (error) {
-    return new Response(
-      JSON.stringify(error),
+    return NextResponse.json(
+      { success: false, error: error.message },
       { status: 400 }
     );
   }

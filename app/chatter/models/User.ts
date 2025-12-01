@@ -13,7 +13,7 @@ export interface IUser {
 
 export interface IUserDocument extends IUser, Document {
 }
-const ObjectId = mongoose.Schema.Types.ObjectId;
+
 const UserSchema = new mongoose.Schema<IUserDocument>({
   google_id: {
     type: Number,

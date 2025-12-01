@@ -5,6 +5,11 @@ var ChatSchema = new mongoose.Schema({
             ref: 'User',
             required: true
         }],
+    unreadCount: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
     name: {
         type: String,
         required: true,

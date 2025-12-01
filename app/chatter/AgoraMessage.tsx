@@ -1,25 +1,47 @@
 import { useEffect, useEffectEvent, useState, useRef } from "react";
-import { ChatterProps } from '../lib/props';
-import { getConversationUser } from "app/lib/chatter";
+import { AgoraMsgProps } from '../lib/props';
+import { getConversationUser, setMessageRead } from "app/lib/chatter";
 import { useSession } from "next-auth/react";
-import { sendMessage } from 'app/lib/chatter';
-
+import { sendMessage } from 'app/lib/chatter'
+import { Model } from "mongoose";
+import Message, { IMessage, IMessageDocument } from './models/Message';
 import { CreateTextMsgParameters } from "agora-chat/message/text";
 import { CreateCustomMsgParameters } from "agora-chat/message/custom";
 
 import agoraChat from "agora-chat";
-import agoraToken from 'agora-token';
-const { ChatTokenBuilder } = agoraToken;
+/*import agoraToken from 'agora-token';
+import AgoraRTM from 'agora-rtm-sdk';*/
 
-export function AgoraMessage({ chat_id, shown }: ChatterProps) {
-    const [error, setError] = useState('');
+/*
+// just a mock channel name for /api/token route
+const getRTMChannelName = (email1: string, email2: string) => {
+    email1 = email1.replaceAll('.', '');
+    email2 = email2.replaceAll('.', '');
+    const sortedEmails = [email1, email2].sort();
 
+    return `NEW_MESSAGE_${sortedEmails[0]}_${sortedEmails[1]}`;
+};
+
+//peer-to-peer connection user_id for signaling about new messages
+const getRTMUserId = (email: string) => {
+    email = email.replaceAll('.', '');
+    return 'message_signaling_'+email;
+}*/
+
+export function AgoraMessage({ shown, onNewMessage, chat_id, currentUserEmail, targetUserEmail }: AgoraMsgProps) {
+    //agora rtm (signaling)
+    /*const { RTM } = AgoraRTM;
+    const rtmClient = useRef(null);
+    const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
+    const rtmUserId = getRTMUserId(currentUserEmail);
+    const rtmChannel = getRTMChannelName(currentUserEmail, targetUserEmail);
+    const [isRtmLoggedIn, setIsRtmLoggedIn] = useState(true);*/
     //agora chat
+    const [messagesWindow, setMessagesWindow] = useState(null);
     const noMessages = useRef(false)
     const prev_chat_id = useRef(null);
     const appKey = process.env.NEXT_PUBLIC_AGORA_CHAT_APP_KEY;
     const [userId, setUserId] = useState('');//user email without dots and @
-    //const [token, setToken] = useState("007eJxTYLicO+0l5ww+23e/7y9LaWo00Jx1OfXBnXOzr8tprdjEdEhFgcHSIiUtLc3IJNU42dLE0DjR0iwtxdQiMTHVPM00ydjY6O0EkcyGQEaG/llfWBgZWBkYgRDEV2FITEw0N04yM9BNSktO1TU0TDPQTUxMTtE1tDQzApqVbGqUnAIAjNQq3Q==");
     const [isLoggedIn, setIsLoggedIn] = useState(true);
     const { data: session, status } = useSession();
     const [peerId, setPeerId] = useState("");//peer email without dots
@@ -28,12 +50,13 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     const [chatClient, setChatClient] = useState<any>(null);
     const [peerDbUser, setPeerDbUser] = useState({});
     const [AgoraChat, setAgoraChat] = useState(null);
+    const [convUser, setConvUser] = useState(null);
+    const [error, setError] = useState('');
 
     useEffect(() => {
-        if(prev_chat_id.current == null) prev_chat_id.current = chat_id;
-        console.log('prev_Chat_id: ', prev_chat_id.current);
-        if(noMessages.current) return;
-        if(chat_id !== prev_chat_id.current) { 
+        if (prev_chat_id.current == null) prev_chat_id.current = chat_id;
+        if (noMessages.current) return;
+        if (chat_id !== prev_chat_id.current) {
             noMessages.current = false;
             setAgoraChat(null);
             setChatClient(null);
@@ -65,12 +88,10 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
             const client = new AgoraChatImport.connection({
                 appKey: appKey,
             });
-            console.log(client)
             setChatClient(client);
 
         };
         if (!chatClient && !AgoraChat) { initAgoraChat(); return; }
-        console.log('chat_id: ', chat_id);
 
         const initAgoraLogin = async () => {
 
@@ -107,7 +128,9 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
                     console.log(`User Logout!`);
                 },
                 onCustomMessage: (message) => {
-                    console.log('message: '+message);
+                    console.log('message: ' + message);
+                    //if messages (state array loaded from db) contain sent message (because message was sent while target user was offline) 
+                    // then we don't add it to messages.
                     let messageAlreadySent = false;
                     for (const msg of messages) {
                         if (msg._id === message.ext._id) {
@@ -116,7 +139,11 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
                     }
                     if (!messageAlreadySent) {
                         setMessages(prevMessages => [...prevMessages, message.ext]);
-                        scrollDown();
+                        if (shown) {
+                            scrollDown();
+                        } else {
+                            onNewMessage(chat_id);//tell parent that messages of the chat are read now
+                        }
                     }
                     console.log(`${message.from} sent msg`);
                 },
@@ -130,16 +157,114 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
                     console.log(`on error: ${(error.message)}`);
                 },
             });
+
         }
+
+        const handleScroll = function () {
+
+            const unreadMessage = document.getElementsByClassName('message unread')[0];
+            console.log(unreadMessage.scrollTop, messagesWindow.scrollTop);
+            if (unreadMessage) {
+                //const messageWindowHeight = messagesWindow.scrollHeight;
+
+
+                if (messagesWindow.scrollTop >= unreadMessage.scrollTop) {
+                    const msgId = unreadMessage.id;
+                    setMessageRead(msgId);
+                }
+            }
+        }
+
+        if (/*status !== 'loading' && */convUser && messagesWindow) {
+            setMessagesWindow(document.getElementsByClassName('message-list')[0]);
+            console.log(document.getElementsByClassName('message-list')[0], messagesWindow)
+            messagesWindow.addEventListener('scroll', handleScroll);
+        }
+
+
+        /* return () => {
+             if (messagesWindow) messagesWindow.removeEventListener('scroll', handleScroll);
+         };*/
 
         initEventListeners()
 
-        scrollDown();
+        if (shown) scrollDown();
 
-        return handleLogout;
+        return () => {
+            handleLogout();
 
-    }, [appKey, userId, chat_id, prev_chat_id, chatClient, messages, noMessages]);
+        };
 
+    }, [appKey, userId, chat_id, prev_chat_id, chatClient, messages, noMessages, convUser, status]);
+
+
+    //handle if user scrolldown 
+    useEffect(() => {
+
+
+
+        //if (document.getElementsByClassName('message-list')[0]) {
+
+
+    }, [])
+
+
+    //rtm notification
+    /*useEffect(() => {
+
+ 
+        async function initMessageNotifications() {
+            console.log('rtm vars:', rtmUserId, rtmChannel, appId)
+            const response = await fetch(`/api/token?userId=${encodeURIComponent(rtmUserId)}&channelName=${encodeURIComponent(rtmChannel)}`);
+            const data = await response.json();
+            if (!data.rtmToken) {
+                console.error("Token fetch failed or token is empty.");
+                return; // Stop execution if no token
+            }
+            const client = new RTM(appId, rtmUserId);
+            console.log('rtm_token:', data.rtmToken);
+            await client.login({ token: data.rtmToken });
+            setIsRtmLoggedIn(true);
+            rtmClient.current = client;
+
+            rtmClient.current.addEventListener('message', (event) => {
+                const signal = event.customType;
+                console.log('notify event:', event);
+                if(signal == 'NEW_MSG') {
+                    console.log(event.message);
+                    const fromEmail = event.message;
+                    onNewMessage(fromEmail);
+                }
+
+            });
+        }
+        if(!rtmClient.current) initMessageNotifications();
+
+        return () => {
+            handleRtmLogout()
+        };
+
+    }, [appId, rtmUserId, rtmChannel, rtmClient])
+
+    const notifyUser = async (currentEmail: string, targetEmail: string) => {
+
+        const payload = currentEmail;
+        const options = {
+            customType: "NEW_MSG",
+            channelType: "USER",
+        };
+        await rtmClient.current.publish(getRTMUserId(targetEmail), payload, options);
+
+    };*/
+
+    // agora RTM Log out
+    /*const handleRtmLogout = () => {
+        if (rtmClient.current) {
+            console.log('rtm logout');
+            rtmClient.current.logout();
+            setIsRtmLoggedIn(false);
+        }
+    };*/
 
     //agora chat send a peer-to-peer message.
     const handleSendMessage = async () => {
@@ -158,15 +283,12 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
                 event: 'MESSAGE_SENT',
                 ext: newMsg,
                 to: peerId,
-                //msg: message,
             };
             let newAgoraMsg = AgoraChat.message.create(options);
 
             await chatClient.send(newAgoraMsg);
-
-            //const newMessages = [...messages, newMsg]
+            //notifyUser(currentUserEmail, targetUserEmail);
             setMessages(prevMessages => [...prevMessages, newMsg]);
-
             console.log(newMsg)
             console.log(`Message send to ${peerId}: ${message}`);
             scrollDown();
@@ -179,13 +301,17 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
 
     function scrollDown() {
         let messageWindow = document.getElementsByClassName('message-list')[0];
+        let firstUnreadMessage = document.getElementsByClassName('message unread')[0];
         if (messageWindow) {
-            const messageWindowHeight = messageWindow.scrollHeight;
-            messageWindow.scrollTop = messageWindowHeight;
+            if (firstUnreadMessage) {
+                messageWindow.scrollTop = firstUnreadMessage.scrollTop;
+            } else {
+                messageWindow.scrollTop = messageWindow.scrollHeight;
+            }
         }
     }
 
-    //remove dots for compatibility
+    //remove dots and @ for compatibility
     const getUserId = (email: string) => {
         email = email.replaceAll('.', '').replaceAll('@', '');
         return email;
@@ -203,12 +329,12 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
         });
         const data = await response.json();
         const token = data.token;
-        console.log(userId, token)
         if (userId && token) {
             chatClient.open({
                 user: userId,
                 accessToken: token,
             });
+            setIsLoggedIn(true);
         } else {
             console.log("Please enter userId and token");
         }
@@ -216,20 +342,33 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
 
     // agora Log out
     const handleLogout = () => {
+        console.log('Chat logout')
         chatClient.close();
         setIsLoggedIn(false);
     };
 
-    if (status === 'loading') {
+    useEffect(() => {
+        async function handleGetConversationUser(chatId: string, email: string) {
+
+            const convUserRes = JSON.parse(await getConversationUser(chatId, email));
+            setConvUser(convUserRes);
+        };
+
+        handleGetConversationUser(chat_id, session?.user?.email)
+
+    }, [chat_id, session?.user?.email]);
+
+
+    if (status === 'loading' || !convUser) {
         return <p>Loading session...</p>;
     }
-
 
     const messageList = messages.map((value, index) => {
 
         const msgDate = new Date(messages[index].createdAt);
+        let className = messages[index].status;
         return (
-            <div className={session?.user?.email === messages[index].user.email ? 'message message-self' : 'message'} key={messages[index]._id}>
+            <div className={session?.user?.email === messages[index].user.email ? 'message message-self ' + className : 'message ' + className} id={messages[index]._id} key={messages[index]._id}>
                 <div className='message-date'>{msgDate.toLocaleTimeString()}</div>
                 <div className='message-user'>{messages[index].user.name}</div>
                 <div className='message-text'>{messages[index].message}</div>
@@ -238,12 +377,16 @@ export function AgoraMessage({ chat_id, shown }: ChatterProps) {
     })
 
     return (
-        <article className={shown ? '' : 'hidden'}>
+        <article className='agora'>
             <div className='messages'>
+                <h3 className='message-list-header'>
+                    Conversation: {convUser?.name}
+                </h3>
                 <div className='message-list'>
                     {messageList}
                 </div>
             </div>
+
             <div className='message-form-wrapper'>
                 <form className='message-form' method='POST'>
                     <textarea name='message' id='message' onChange={(e) => { setMessage(e.target.value) }} value={message}>

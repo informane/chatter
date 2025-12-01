@@ -15,6 +15,10 @@ const MessageSchema = new mongoose.Schema<IMessageDocument>({
     type: String,
     required: true,
   },
+  status: {
+    type: String,
+    required: true,
+  },
 },{
   timestamps: true
 });
@@ -23,6 +27,7 @@ export interface IMessage {
   chat: mongoose.Schema.Types.ObjectId;
   user: mongoose.Schema.Types.ObjectId;
   message: string;
+  status: string;
   createdAt: Date;
   updatedAt: Date
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSession, signIn, signOut } from "next-auth/react"
 import Modal from './Modal';
-import UserSearch from './UserSearch';
+
 
 
 export default function Menu() {
@@ -18,7 +18,7 @@ export default function Menu() {
         <div className='menu'>
             <button onClick={()=>setModalMenuIsOpen(true)} className='menu-btn'>Menu</button>
             <Modal className='menu' isOpen={modalMenuIsOpen} onClose={() => setModalMenuIsOpen(false)}>
-                {email && <UserSearch />}
+                {/*email && <UserSearch  onUpdateChatList={onUpdateChatList}/>*/}
                 {email ?
                     <button className='primary-btn' onClick={() => signOut({ callbackUrl: "/api/auth/signin" })}>Sign out({email}) </button> :
                     <button className='primary-btn' onClick={() => signIn()}>Sign in</button>

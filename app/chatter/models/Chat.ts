@@ -1,33 +1,14 @@
 import mongoose from 'mongoose';
 
-/*export interface IMessageDocument extends IMessage, Document {}
-export interface IMessage {
-  user_id: mongoose.Schema.Types.ObjectId;
-  message: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-const MessageSchema = new mongoose.Schema<IMessageDocument>({
-  user_id: {
-    type: mongoose.Types.ObjectId,
-    required: true,
-  },
-  message: {
-    type: String,
-    required: true,
-  },
-},{
-  timestamps: true
-});*/
-
 export interface IChat {
   users: [mongoose.Types.ObjectId];
+  unreadCount?: Number;
   name: string;
   description?: string;
   createdAt: Date;
   updatedAt: Date;
 }
-export interface IChatDocument extends IChat, Document {}
+export interface IChatDocument extends IChat, Document { }
 
 const ChatSchema = new mongoose.Schema<IChatDocument>({
   users: [{
@@ -35,6 +16,11 @@ const ChatSchema = new mongoose.Schema<IChatDocument>({
     ref: 'User',
     required: true
   }],
+  unreadCount: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
   name: {
     type: String,
     required: true,

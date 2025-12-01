@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-var ObjectId = mongoose.Schema.Types.ObjectId;
 var UserSchema = new mongoose.Schema({
     google_id: {
         type: Number,

@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import dbConnect from '../../../lib/mongodb';
 import Message from '../../../chatter/models/Message';
+import { NextResponse } from 'next/server';
 export default function GET(request) {
     return __awaiter(this, void 0, void 0, function () {
         var searchParams, id, MessageInstance, user, error_1;
@@ -117,10 +118,10 @@ export function PUT(request) {
                     return [4 /*yield*/, MessageInstance.findByIdAndUpdate(id, body)];
                 case 3:
                     message = _a.sent();
-                    return [2 /*return*/, new Response(JSON.stringify({ success: true, data: message }), { status: 200 })];
+                    return [2 /*return*/, NextResponse.json({ success: true, data: message }, { status: 200 })];
                 case 4:
                     error_3 = _a.sent();
-                    return [2 /*return*/, new Response(JSON.stringify(error_3), { status: 400 })];
+                    return [2 /*return*/, NextResponse.json({ success: false, error: error_3.message }, { status: 400 })];
                 case 5: return [2 /*return*/];
             }
         });

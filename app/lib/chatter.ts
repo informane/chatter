@@ -1,12 +1,14 @@
 'use server'
 import dbConnect from "./mongodb";
 import User, { IUser, IUserDocument } from '../chatter/models/User';
-import Chat, { IChatDocument, IChat } from '../chatter/models/Chat';
+import Chat, { IChatDocument } from '../chatter/models/Chat';
+import Message, { IMessageDocument } from '../chatter/models/Message';
 import { Model } from "mongoose";
 import { Document, ObjectId } from 'mongoose';
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { cookies } from 'next/headers'
+import strict from "assert/strict";
 /*
 export async function addChatAction(queryData: FormData) {
 
@@ -20,6 +22,19 @@ export async function addChatAction(queryData: FormData) {
     const res = await newChat.json()
     return res;
 }*/
+
+export async function setMessageRead(id: string) {
+    try {
+
+        await dbConnect();
+
+        const MessageModel: Model<IMessageDocument> = Message;
+        const messagesUpdateResult = await MessageModel.updateOne({ _id: id }, { status: 'read' });
+
+    } catch (error) {
+        console.log('setMessagesRead error:', error.message);
+    }
+}
 
 export async function getChatUsers(chatId: string) {
 
@@ -115,6 +130,15 @@ export async function getServerSessionEmail() {
         }
     }
     return '';
+}
+
+export async function getUserModelJson(email: string) {
+
+    await dbConnect();
+    var UserModel: Model<IUserDocument> = User;
+    const user = await UserModel.findOne({ email: email }).exec();
+    return JSON.stringify(user);
+
 }
 
 export async function getUserModel(email: string): Promise<IUserDocument> {

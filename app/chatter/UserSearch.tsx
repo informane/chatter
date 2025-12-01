@@ -9,7 +9,7 @@ import Search from './Search';
 import Modal from './Modal';
 
 
-export default function UserSearch() {
+export default function UserSearch({onUpdateChatList}) {
     const [Users, setUsers] = useState([]);
     const [error, setError] = useState({message: null});
     const [success, setSuccess] = useState({message: null});
@@ -45,6 +45,7 @@ export default function UserSearch() {
         } else {
             setSuccess({message: "Successfull added to contacts!"});
             setError({message: null});
+            onUpdateChatList(true);
         }
     }
     function renderUsers() {

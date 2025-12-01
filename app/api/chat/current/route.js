@@ -34,18 +34,46 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 import dbConnect from '../../../lib/mongodb';
 import Chat from '../../../chatter/models/Chat';
 import { NextResponse } from 'next/server';
 import { getServerSessionEmail } from '../../../lib/chatter';
 import User from 'app/chatter/models/User';
+import Message from 'app/chatter/models/Message';
 export function GET(request) {
     return __awaiter(this, void 0, void 0, function () {
         var error, data, UserChatsUsers, email, searchParams, query, UserModel, regex, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 9, , 10]);
+                    _a.trys.push([0, 12, , 13]);
                     return [4 /*yield*/, dbConnect()];
                 case 1:
                     _a.sent();
@@ -54,11 +82,11 @@ export function GET(request) {
                     return [4 /*yield*/, getServerSessionEmail()];
                 case 2:
                     email = _a.sent();
-                    if (!email) return [3 /*break*/, 7];
+                    if (!email) return [3 /*break*/, 10];
                     searchParams = request.nextUrl.searchParams;
                     query = searchParams.get('query');
                     UserModel = User;
-                    if (!query) return [3 /*break*/, 4];
+                    if (!(query && query.length)) return [3 /*break*/, 4];
                     regex = new RegExp(query, 'i');
                     return [4 /*yield*/, UserModel.findOne({ email: email })
                             .populate({
@@ -84,25 +112,91 @@ export function GET(request) {
                     UserChatsUsers = _a.sent();
                     _a.label = 6;
                 case 6:
-                    if (UserChatsUsers.chats.length) {
-                        //if(UserChatsUsers.chats.users) {
-                        data = UserChatsUsers.chats;
+                    if (!UserChatsUsers.chats.length) return [3 /*break*/, 8];
+                    return [4 /*yield*/, getMessageCountByChatsArray(UserChatsUsers.chats)
+                        //throw new Error(JSON.stringify(data)); 
+                        //data = UserChatsUsers.chats
                         //} else error = { status: true, message: 'chats for this user not found: ' + email }
-                    }
-                    else
-                        error = { status: true, message: 'chats for this user with given criteria not found: ' + email };
-                    return [3 /*break*/, 8];
+                    ];
                 case 7:
-                    error = { status: true, message: 'empty email: ' + email };
-                    _a.label = 8;
+                    //if(UserChatsUsers.chats.users) {
+                    data = _a.sent();
+                    return [3 /*break*/, 9];
                 case 8:
+                    error = { status: true, message: 'chats for this user with given criteria not found: ' + email };
+                    _a.label = 9;
+                case 9: return [3 /*break*/, 11];
+                case 10:
+                    error = { status: true, message: 'empty email: ' + email };
+                    _a.label = 11;
+                case 11:
                     if (error.status)
                         return [2 /*return*/, NextResponse.json({ success: false, error: error.message }, { status: 200 })];
                     return [2 /*return*/, NextResponse.json({ success: true, data: data }, { status: 200 })];
-                case 9:
+                case 12:
                     error_1 = _a.sent();
                     return [2 /*return*/, NextResponse.json({ success: false, error: error_1.message }, { status: 400 })];
-                case 10: return [2 /*return*/];
+                case 13: return [2 /*return*/];
+            }
+        });
+    });
+}
+function getMessageCountByChatsArray(chats) {
+    return __awaiter(this, void 0, void 0, function () {
+        var MessageModel, groupedMessages, _a, _b, _c, i, chat, groupedMessages_1, groupedMessages_1_1, msg;
+        var e_1, _d, e_2, _e;
+        return __generator(this, function (_f) {
+            switch (_f.label) {
+                case 0:
+                    MessageModel = Message;
+                    return [4 /*yield*/, MessageModel.aggregate([
+                            {
+                                $match: {
+                                    status: 'unread',
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: '$chat',
+                                    count: { $sum: 1 }
+                                }
+                            }
+                        ])];
+                case 1:
+                    groupedMessages = _f.sent();
+                    try {
+                        //throw new Error(JSON.stringify(groupedMessages));
+                        for (_a = __values(chats.entries()), _b = _a.next(); !_b.done; _b = _a.next()) {
+                            _c = __read(_b.value, 2), i = _c[0], chat = _c[1];
+                            try {
+                                //throw new Error(JSON.stringify(chat));  
+                                for (groupedMessages_1 = (e_2 = void 0, __values(groupedMessages)), groupedMessages_1_1 = groupedMessages_1.next(); !groupedMessages_1_1.done; groupedMessages_1_1 = groupedMessages_1.next()) {
+                                    msg = groupedMessages_1_1.value;
+                                    if (chat._id == msg._id) {
+                                        //throw new Error(JSON.stringify(msg)+':'+JSON.stringify(chat));  
+                                        chats[i].unreadCount = msg.count;
+                                    }
+                                    ;
+                                }
+                            }
+                            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                            finally {
+                                try {
+                                    if (groupedMessages_1_1 && !groupedMessages_1_1.done && (_e = groupedMessages_1.return)) _e.call(groupedMessages_1);
+                                }
+                                finally { if (e_2) throw e_2.error; }
+                            }
+                        }
+                    }
+                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                    finally {
+                        try {
+                            if (_b && !_b.done && (_d = _a.return)) _d.call(_a);
+                        }
+                        finally { if (e_1) throw e_1.error; }
+                    }
+                    //throw new Error(JSON.stringify(groupedMessages)+':'+JSON.stringify(chats));  
+                    return [2 /*return*/, chats];
             }
         });
     });
@@ -154,7 +248,7 @@ export function POST(request) {
                     chat = _a.sent();
                     chat.users.push(currentUser._id);
                     chat.users.push(addingUser._id);
-                    chat.name = addingUser.name;
+                    chat.name = currentUser.email + "&" + addingUser.email;
                     chat.description = '';
                     return [4 /*yield*/, chat.save()];
                 case 10:

@@ -109,12 +109,12 @@ function Messages({ chat_id }: ChatterProps) {
             </div>
         )
     })
-//
+//<VoipCallDynamic userEmail={session.user.email} targetUserEmail={convUser.email} />
         return (
             <div className='messages'>
                 <h3 className='message-list-header'>
                     Conversation: {convUser?.name}
-                    <VoipCallDynamic userEmail={session.user.email} targetUserEmail={convUser.email} />
+                    
                 </h3>
                 <div className='message-list'>
                     {messageList}
