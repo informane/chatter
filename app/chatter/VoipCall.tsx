@@ -53,7 +53,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     const { error, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
     const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
-    const agoraClient = useRTCClient();
     const remoteUsers = useRemoteUsers();
 
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
@@ -134,9 +133,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
-        while (isLoadingCam || isLoadingMic) {}
-        await agoraClient.publish([localMicrophoneTrack, localCameraTrack]);
-
+        while (isLoadingCam || isLoadingMic) { }
+        await rtcClient.publish([/*localMicrophoneTrack, */localCameraTrack]);
+        console.log("Publish success!");
     }, []);
 
     var handleLeave = useCallback(async () => {
@@ -180,7 +179,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         }
         await rtmClient.current.publish(getUserId(targetUserEmail), payload, options);
 
-        console.log("Publish success!");
     };
 
     const cancelCall = async () => {
@@ -190,7 +188,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     if (callState === 'IN_CALL' || callState == 'CALLING') {
 
-        //if (!isLoadingCam && !isLoadingMic) 
+        //if (!isLoadingCam && !isLoadingMic)         
+
         return (
             <div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
