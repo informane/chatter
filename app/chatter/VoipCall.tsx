@@ -136,7 +136,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
         const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
         //await rtcClient.publish([audioTrack, videoTrack]);
-        await rtcClient.publish([localAudioTrack.current!, localVideoTrack.current!] as unknown as ILocalTrack[]);
+        await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
         /*while (isLoadingCam || isLoadingMic) { }
         await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);*/
 
@@ -195,11 +195,11 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     if (callState === 'IN_CALL' || callState == 'CALLING') {
 
         //if (!isLoadingCam && !isLoadingMic)         
-        if (camError)
+        /*if (camError)
             return (<div>{camError.message}</div>)
 
         if (micError)
-            return (<div>{micError.message}</div>)
+            return (<div>{micError.message}</div>)*/
         return (
             <div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
@@ -208,8 +208,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 {/*<button onClick={toggleMicMute}>
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>*/}
-                {localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true} />}
-                {localMicrophoneTrack && <LocalAudioTrack track={localMicrophoneTrack} />}
+                {<LocalVideoTrack track={localCameraTrack} play={true} />}
+                {<LocalAudioTrack track={localMicrophoneTrack} />}
                 <div className="video-grid-container">
                     {/* Render each remote video track in its own container */}
                     {videoTracks.map((track) => (
