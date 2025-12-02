@@ -178,8 +178,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             customType: "CALL_INVITE",
             channelType: "USER",
         };
-        await rtmClient.current.publish(getUserId(targetEmail), payload, options);
-
+        if (rtmClient.current) {
+            await rtmClient.current.publish(getUserId(targetEmail), payload, options);
+        }
     };
 
     const answerCall = async () => {
