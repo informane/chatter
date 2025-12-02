@@ -135,11 +135,11 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
 
         const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        //await rtcClient.publish([audioTrack, videoTrack]);
-        await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
-        /*while (isLoadingCam || isLoadingMic) { }
-        await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);*/
-
+        await rtcClient.publish([audioTrack, videoTrack] as unknown as ILocalTrack[]);
+        //await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
+        //while (isLoadingCam || isLoadingMic) { }
+        //await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
+        //await rtcClient.publish(localCameraTrack);
         console.log("Publish success!");
     }, []);
 
