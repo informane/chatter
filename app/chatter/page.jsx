@@ -81,9 +81,10 @@ export default function Chatter() {
                         case 2:
                             chats = _a.sent();
                             if (chats.data)
-                                if (chats.data.length)
+                                if (chats.data.length) {
                                     setChatList(chats.data);
-                            console.log(chats.data);
+                                    //console.log('page.tsx chatList:', chats.data);
+                                }
                             return [2 /*return*/];
                     }
                 });

@@ -3,21 +3,21 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     useRTCClient,
-    useIsConnected,
-    LocalVideoTrack,
     LocalUser,
     RemoteUser,
-    useJoin,
+    LocalVideoTrack,
+    LocalAudioTrack,
     useLocalCameraTrack,
     useLocalMicrophoneTrack,
-    usePublish,
     useRemoteUsers,
     useRemoteAudioTracks,
+    useRemoteVideoTracks, // Provides list of active video tracks
+    RemoteAudioTrack,   // Component to play audio track
+    RemoteVideoTrack,   // Component to display video track
 } from 'agora-rtc-react';
 
 import AgoraRTM from 'agora-rtm-sdk';
-import AgoraRTC, { ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
-import AgoraChat from "agora-chat";
+
 
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1: string, email2: string) => {
@@ -41,24 +41,22 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     const rtmClient = useRef(null);
     const rtcClient = useRTCClient();
 
-    //const [uid, setUid] = useState(null);
-
     const rtcToken = useRef(null);
     const uid = useRef(null);
-    //const [calling, setCalling] = useState(false);
 
     const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
     const userId = getUserId(currentUserEmail);
     const channel = getDirectChannelName(currentUserEmail, targetUserEmail);
 
-    /*const { error, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
-    const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();*/
-    const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
-    const localVideoTrack = useRef<ICameraVideoTrack | null>(null);
-    const remoteUsers = useRemoteUsers();
+    //const { localAudioTrack, localVideoTrack, isLoading, error } = useMicrophoneAndCameraTracks();
 
-    console.log(remoteUsers, currentUserEmail, targetUserEmail);
+    const { error: micError, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
+    const { error: camError, isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
+    const remoteUsers = useRemoteUsers();
     const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    const { videoTracks } = useRemoteVideoTracks(remoteUsers);
+    console.log(remoteUsers, currentUserEmail, targetUserEmail);
+    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
     //audioTracks.map((track) => { track.play(); track.setVolume(100) });
 
 
@@ -112,7 +110,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
         init()
 
-        //await client.subscribe(getDirectChannelName(currentUserEmail, RemoteUserEmail))
         return () => {
             if (rtmClient) {
                 console.log('rtm logout');
@@ -127,11 +124,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
 
-        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        localAudioTrack.current = audioTrack;
-        localVideoTrack.current = videoTrack;
-        //while (isLoadingCam || isLoadingMic) { }
-        await rtcClient.publish([localAudioTrack.current, localVideoTrack.current]);
+
+        while (isLoadingCam || isLoadingMic) { }
+        await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
         console.log("Publish success!");
     }, []);
 
@@ -195,23 +190,31 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 {/*<button onClick={toggleMicMute}>
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>*/}
-                {/*localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true} />}
-                {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack} />*/}
-                {
-                    remoteUsers.map((user) => (
-                        <div key={user.uid} >
-                            {/*
-                                user._audio_muted_ ? (
-                                    <span style={{ color: 'red', marginLeft: '10px' }}>🔇Remote is Muted</span>
-                                ) : (
-                                    <span style={{ color: 'green', marginLeft: '10px' }}>🎤Remote is Unmuted</span>
-                                )
-                            */}
-                            <RemoteUser user={user} key={user.uid} />
-                            <p>User UID: {user.uid}</p>
+                {localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true} />}
+                {localMicrophoneTrack && <LocalAudioTrack track={localMicrophoneTrack} />}
+                <div className="video-grid-container">
+                    {/* Render each remote video track in its own container */}
+                    {videoTracks.map((track) => (
+                        <div key={track.getUserId()} className="video-card">
+                            <RemoteVideoTrack
+                                track={track}
+                                play={true} // Ensures playback starts
+                                // Style the container/video element here if needed
+                                style={{ width: '100%', height: '100%' }}
+                            />
+                            <p>User UID: {track.getUserId()}</p>
                         </div>
-                    ))
-                }
+                    ))}
+
+                    {/* Render each remote audio track (audio only, no UI needed) */}
+                    {audioTracks.map((track) => (
+                        <RemoteAudioTrack
+                            key={track.getUserId()}
+                            track={track}
+                            play={true} // Ensures audio playback
+                        />
+                    ))}
+                </div>
             </div>
         );
     }

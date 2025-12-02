@@ -52,7 +52,10 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRTCClient, LocalUser, RemoteUser, useLocalMicrophoneTrack, usePublish, useRemoteUsers, } from 'agora-rtc-react';
+import { useRTCClient, LocalVideoTrack, LocalAudioTrack, useLocalCameraTrack, useLocalMicrophoneTrack, useRemoteUsers, useRemoteAudioTracks, useRemoteVideoTracks, // Provides list of active video tracks
+RemoteAudioTrack, // Component to play audio track
+RemoteVideoTrack, // Component to display video track
+ } from 'agora-rtc-react';
 import AgoraRTM from 'agora-rtm-sdk';
 // Helper function to generate a consistent channel name for a 1:1 call
 var getDirectChannelName = function (email1, email2) {
@@ -73,28 +76,30 @@ export default function VoipCall(_a) {
     var _c = __read(useState(targetUserEmail), 1), remoteUserEmail = _c[0];
     var rtmClient = useRef(null);
     var rtcClient = useRTCClient();
-    //const [uid, setUid] = useState(null);
     var rtcToken = useRef(null);
     var uid = useRef(null);
-    //const [calling, setCalling] = useState(false);
     var appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
     var userId = getUserId(currentUserEmail);
     var channel = getDirectChannelName(currentUserEmail, targetUserEmail);
-    var _d = useLocalMicrophoneTrack(), error = _d.error, isLoading = _d.isLoading, localMicrophoneTrack = _d.localMicrophoneTrack;
+    //const { localAudioTrack, localVideoTrack, isLoading, error } = useMicrophoneAndCameraTracks();
+    var _d = useLocalMicrophoneTrack(), micError = _d.error, isLoadingMic = _d.isLoading, localMicrophoneTrack = _d.localMicrophoneTrack;
+    var _e = useLocalCameraTrack(), camError = _e.error, isLoadingCam = _e.isLoading, localCameraTrack = _e.localCameraTrack;
     var remoteUsers = useRemoteUsers();
+    var audioTracks = useRemoteAudioTracks(remoteUsers).audioTracks;
+    var videoTracks = useRemoteVideoTracks(remoteUsers).videoTracks;
     console.log(remoteUsers, currentUserEmail, targetUserEmail);
-    /*const { audioTracks } = useRemoteAudioTracks(remoteUsers);
-    audioTracks.map((track) => { track.play(); track.setVolume(100) });*/
-    usePublish([localMicrophoneTrack]);
-    var _e = __read(useState(false), 2), isMicMuted = _e[0], setIsMicMuted = _e[1];
-    var toggleMicMute = function () {
+    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
+    //audioTracks.map((track) => { track.play(); track.setVolume(100) });
+    //usePublish([localMicrophoneTrack, localCameraTrack]);
+    var _f = __read(useState(false), 2), isMicMuted = _f[0], setIsMicMuted = _f[1];
+    /*const toggleMicMute = () => {
         if (localMicrophoneTrack) {
             localMicrophoneTrack.setEnabled(true);
-            var newMutedState = !isMicMuted;
+            const newMutedState = !isMicMuted;
             localMicrophoneTrack.setMuted(newMutedState);
             setIsMicMuted(newMutedState); // Update React state for UI
         }
-    };
+    };*/
     // Initialize RTM Client (Signaling) and RTC options(Voice Calling)
     useEffect(function () {
         var init = function () { return __awaiter(_this, void 0, void 0, function () {
@@ -139,7 +144,6 @@ export default function VoipCall(_a) {
             });
         }); };
         init();
-        //await client.subscribe(getDirectChannelName(currentUserEmail, RemoteUserEmail))
         return function () {
             if (rtmClient) {
                 console.log('rtm logout');
@@ -155,6 +159,11 @@ export default function VoipCall(_a) {
                     return [4 /*yield*/, rtcClient.join(appId, channel, rtcToken.current, uid.current)];
                 case 1:
                     _a.sent();
+                    while (isLoadingCam || isLoadingMic) { }
+                    return [4 /*yield*/, rtcClient.publish([localCameraTrack, localMicrophoneTrack])];
+                case 2:
+                    _a.sent();
+                    console.log("Publish success!");
                     return [2 /*return*/];
             }
         });
@@ -234,24 +243,30 @@ export default function VoipCall(_a) {
         });
     }); };
     if (callState === 'IN_CALL' || callState == 'CALLING') {
-        console.log("state:" + callState, "users: " + JSON.stringify(remoteUsers));
+        //if (!isLoadingCam && !isLoadingMic)         
         return (<div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
                 <button onClick={cancelCall}>End Call</button>
-                <button onClick={toggleMicMute}>
-                    {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
-                </button>
-                {localMicrophoneTrack && <LocalUser audioTrack={localMicrophoneTrack}/>}
-                {remoteUsers.map(function (user) { return (<div key={user.uid}>
-                            {/*
-                    user._audio_muted_ ? (
-                        <span style={{ color: 'red', marginLeft: '10px' }}>🔇Remote is Muted</span>
-                    ) : (
-                        <span style={{ color: 'green', marginLeft: '10px' }}>🎤Remote is Unmuted</span>
-                    )
-                */}
-                            <RemoteUser user={user}/>
+
+                {/*<button onClick={toggleMicMute}>
+                {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
+            </button>*/}
+                {localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true}/>}
+                {localMicrophoneTrack && <LocalAudioTrack track={localMicrophoneTrack}/>}
+                <div className="video-grid-container">
+                    {/* Render each remote video track in its own container */}
+                    {videoTracks.map(function (track) { return (<div key={track.getUserId()} className="video-card">
+                            <RemoteVideoTrack track={track} play={true} // Ensures playback starts
+             
+            // Style the container/video element here if needed
+            style={{ width: '100%', height: '100%' }}/>
+                            <p>User UID: {track.getUserId()}</p>
                         </div>); })}
+
+                    {/* Render each remote audio track (audio only, no UI needed) */}
+                    {audioTracks.map(function (track) { return (<RemoteAudioTrack key={track.getUserId()} track={track} play={true} // Ensures audio playback
+            />); })}
+                </div>
             </div>);
     }
     if (callState === 'RECEIVING_CALL') {
