@@ -18,7 +18,7 @@ import {
 } from 'agora-rtc-react';
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
-import AgoraRTC, { IAgoraRTCClient, ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
+import AgoraRTC/*, { IAgoraRTCClient, ICameraVideoTrack, IMicrophoneAudioTrack }*/ from 'agora-rtc-sdk-ng';
 
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1: string, email2: string) => {
@@ -53,8 +53,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     const { error: micError, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
     const { error: camError, isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
-    const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
-    const localVideoTrack = useRef<ICameraVideoTrack | null>(null);
+    /*const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
+    const localVideoTrack = useRef<ICameraVideoTrack | null>(null);*/
 
     //const { localAudioTrack, localVideoTrack, isLoading, error } = usetMicrophoneAndCameraTracks();
 
@@ -135,18 +135,17 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
 
         //const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        /*const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
         const videoTrack = await AgoraRTC.createCameraVideoTrack();
         localAudioTrack.current = audioTrack;
         localVideoTrack.current = videoTrack;
-        if(/*audioTrack && */videoTrack){
-            await rtcClient.publish(/*[localAudioTrack.current, */localVideoTrack.current/*]*/ as unknown as ILocalTrack);
-            //await rtcClient.publish([audioTrack, videoTrack] as unknown as ILocalTrack[]);
-        } else throw new Error('no audio or video track!');
+        if(audioTrack && videoTrack){
+            await rtcClient.publish([localAudioTrack.current, localVideoTrack.current] as unknown as ILocalTrack);
+        } else throw new Error('no audio or video track!');*/
 
         //await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
-        //while (isLoadingCam || isLoadingMic) { }
-        //await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
+        while (isLoadingCam || isLoadingMic) { }
+        await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
         //await rtcClient.publish(localCameraTrack);
         console.log("Publish success!");
     }, []);
