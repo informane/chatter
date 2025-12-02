@@ -135,23 +135,13 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
 
-        //const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-        /*const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        const videoTrack = await AgoraRTC.createCameraVideoTrack();
-        localAudioTrack.current = audioTrack;
-        localVideoTrack.current = videoTrack;
-        if(audioTrack && videoTrack){
-            await rtcClient.publish([localAudioTrack.current, localVideoTrack.current] as unknown as ILocalTrack);
-        } else throw new Error('no audio or video track!');*/
-
-        //await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
         console.log(isLoadingCam, isLoadingMic, localCameraTrack);
         while (isLoadingCam || isLoadingMic) { }
         console.log(isLoadingCam, isLoadingMic, localCameraTrack);
         //console.log('cam error msgs', camError.message);
         await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
         console.log("Publish success!");
-    }//, [localCameraTrack, isLoadingCam, localMicrophoneTrack,isLoadingMic]);
+    }
 
     var handleLeave = useCallback(async () => {
 
