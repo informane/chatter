@@ -55,7 +55,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRTCClient, LocalVideoTrack, LocalAudioTrack, useLocalCameraTrack, useLocalMicrophoneTrack, useRemoteUsers, useRemoteAudioTracks, useRemoteVideoTracks, RemoteAudioTrack, RemoteVideoTrack } from 'agora-rtc-react';
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
-import AgoraRTC from 'agora-rtc-sdk-ng';
 // Helper function to generate a consistent channel name for a 1:1 call
 var getDirectChannelName = function (email1, email2) {
     email1 = email1.replaceAll('.', '');
@@ -83,8 +82,8 @@ export default function VoipCall(_a) {
     //const { localAudioTrack, localVideoTrack, isLoading, error } = useMicrophoneAndCameraTracks();
     var _d = useLocalMicrophoneTrack(), micError = _d.error, isLoadingMic = _d.isLoading, localMicrophoneTrack = _d.localMicrophoneTrack;
     var _e = useLocalCameraTrack(), camError = _e.error, isLoadingCam = _e.isLoading, localCameraTrack = _e.localCameraTrack;
-    var localAudioTrack = useRef(null);
-    var localVideoTrack = useRef(null);
+    /*const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
+    const localVideoTrack = useRef<ICameraVideoTrack | null>(null);*/
     //const { localAudioTrack, localVideoTrack, isLoading, error } = usetMicrophoneAndCameraTracks();
     var remoteUsers = useRemoteUsers();
     var audioTracks = useRemoteAudioTracks(remoteUsers).audioTracks;
@@ -157,23 +156,26 @@ export default function VoipCall(_a) {
         };
     }, []);
     var handleJoin = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
-        var _a, audioTrack, videoTrack;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     console.log(appId, channel, rtcToken.current);
                     return [4 /*yield*/, rtcClient.join(appId, channel, rtcToken.current, uid.current)];
                 case 1:
-                    _b.sent();
-                    return [4 /*yield*/, AgoraRTC.createMicrophoneAndCameraTracks()];
-                case 2:
-                    _a = __read.apply(void 0, [_b.sent(), 2]), audioTrack = _a[0], videoTrack = _a[1];
-                    return [4 /*yield*/, rtcClient.publish([audioTrack, videoTrack])];
-                case 3:
-                    _b.sent();
+                    _a.sent();
+                    //const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+                    /*const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                    const videoTrack = await AgoraRTC.createCameraVideoTrack();
+                    localAudioTrack.current = audioTrack;
+                    localVideoTrack.current = videoTrack;
+                    if(audioTrack && videoTrack){
+                        await rtcClient.publish([localAudioTrack.current, localVideoTrack.current] as unknown as ILocalTrack);
+                    } else throw new Error('no audio or video track!');*/
                     //await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
-                    //while (isLoadingCam || isLoadingMic) { }
-                    //await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
+                    while (isLoadingCam || isLoadingMic) { }
+                    return [4 /*yield*/, rtcClient.publish([localCameraTrack, localMicrophoneTrack])];
+                case 2:
+                    _a.sent();
                     //await rtcClient.publish(localCameraTrack);
                     console.log("Publish success!");
                     return [2 /*return*/];
@@ -196,9 +198,7 @@ export default function VoipCall(_a) {
                 case 1:
                     _a.sent();
                     _a.label = 2;
-                case 2:
-                    console.log("CAll state:", callState);
-                    return [4 /*yield*/, rtcClient.leave()];
+                case 2: return [4 /*yield*/, rtcClient.leave()];
                 case 3:
                     _a.sent();
                     return [2 /*return*/];
@@ -217,10 +217,12 @@ export default function VoipCall(_a) {
                         customType: "CALL_INVITE",
                         channelType: "USER",
                     };
+                    if (!rtmClient.current) return [3 /*break*/, 2];
                     return [4 /*yield*/, rtmClient.current.publish(getUserId(targetEmail), payload, options)];
                 case 1:
                     _a.sent();
-                    return [2 /*return*/];
+                    _a.label = 2;
+                case 2: return [2 /*return*/];
             }
         });
     }); };

@@ -56,7 +56,6 @@ import ChatList from './ChatList';
 import { useSession } from "next-auth/react";
 import { Suspense, useEffect, useState } from 'react';
 import './styles.scss';
-import AgoraMessasgeWrapper from './AgoraMessageDynamic';
 import VoipCallWrapper from './VoipCallDynamic';
 import { redirect } from 'next/navigation';
 export default function Chatter() {
@@ -105,7 +104,7 @@ export default function Chatter() {
     var chatWindowsMap = chatList.map(function (value, index) {
         return (<div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
         <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email}/>
-        {session.user.email && <AgoraMessasgeWrapper shown={chatId == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email}/>}
+        {/*session.user.email && <AgoraMessasgeWrapper shown={chatId == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
       </div>);
     });
     return (<Suspense fallback={<div>Loading...</div>}>
