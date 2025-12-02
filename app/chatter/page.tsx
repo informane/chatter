@@ -54,7 +54,7 @@ export default function Chatter() {
     return (
       <div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
         <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />
-        {session.user.email && <AgoraMessasgeWrapper shown={chatId == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />}
+        {/*session.user.email && <AgoraMessasgeWrapper shown={chatId == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
       </div>
     )
   })

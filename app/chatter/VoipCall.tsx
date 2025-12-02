@@ -165,7 +165,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 await rtmClient.current.publish(getUserId(remoteUserEmail), payload, options);
             }
         }
-        console.log("CAll state:", callState);
         await rtcClient.leave();
     }, [callState]);
 
