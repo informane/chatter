@@ -52,11 +52,10 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRTCClient, LocalVideoTrack, LocalAudioTrack, useLocalCameraTrack, useLocalMicrophoneTrack, useRemoteUsers, useRemoteAudioTracks, useRemoteVideoTracks, // Provides list of active video tracks
-RemoteAudioTrack, // Component to play audio track
-RemoteVideoTrack, // Component to display video track
- } from 'agora-rtc-react';
+import { useRTCClient, LocalVideoTrack, LocalAudioTrack, useLocalCameraTrack, useLocalMicrophoneTrack, useRemoteUsers, useRemoteAudioTracks, useRemoteVideoTracks, RemoteAudioTrack, RemoteVideoTrack } from 'agora-rtc-react';
+//import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
+import AgoraRTC from 'agora-rtc-sdk-ng';
 // Helper function to generate a consistent channel name for a 1:1 call
 var getDirectChannelName = function (email1, email2) {
     email1 = email1.replaceAll('.', '');
@@ -84,6 +83,9 @@ export default function VoipCall(_a) {
     //const { localAudioTrack, localVideoTrack, isLoading, error } = useMicrophoneAndCameraTracks();
     var _d = useLocalMicrophoneTrack(), micError = _d.error, isLoadingMic = _d.isLoading, localMicrophoneTrack = _d.localMicrophoneTrack;
     var _e = useLocalCameraTrack(), camError = _e.error, isLoadingCam = _e.isLoading, localCameraTrack = _e.localCameraTrack;
+    var localAudioTrack = useRef(null);
+    var localVideoTrack = useRef(null);
+    //const { localAudioTrack, localVideoTrack, isLoading, error } = usetMicrophoneAndCameraTracks();
     var remoteUsers = useRemoteUsers();
     var audioTracks = useRemoteAudioTracks(remoteUsers).audioTracks;
     var videoTracks = useRemoteVideoTracks(remoteUsers).videoTracks;
@@ -149,20 +151,30 @@ export default function VoipCall(_a) {
                 console.log('rtm logout');
                 rtmClient.current.logout();
             }
+            if (rtcClient) {
+                rtcClient.leave();
+            }
         };
     }, []);
     var handleJoin = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var _a, audioTrack, videoTrack;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     console.log(appId, channel, rtcToken.current);
                     return [4 /*yield*/, rtcClient.join(appId, channel, rtcToken.current, uid.current)];
                 case 1:
-                    _a.sent();
-                    while (isLoadingCam || isLoadingMic) { }
-                    return [4 /*yield*/, rtcClient.publish([localCameraTrack, localMicrophoneTrack])];
+                    _b.sent();
+                    return [4 /*yield*/, AgoraRTC.createMicrophoneAndCameraTracks()];
                 case 2:
-                    _a.sent();
+                    _a = __read.apply(void 0, [_b.sent(), 2]), audioTrack = _a[0], videoTrack = _a[1];
+                    return [4 /*yield*/, rtcClient.publish([audioTrack, videoTrack])];
+                case 3:
+                    _b.sent();
+                    //await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
+                    //while (isLoadingCam || isLoadingMic) { }
+                    //await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
+                    //await rtcClient.publish(localCameraTrack);
                     console.log("Publish success!");
                     return [2 /*return*/];
             }
@@ -179,6 +191,7 @@ export default function VoipCall(_a) {
                         customType: "CALL_END",
                         channelType: "USER",
                     };
+                    if (!rtmClient.current) return [3 /*break*/, 2];
                     return [4 /*yield*/, rtmClient.current.publish(getUserId(remoteUserEmail), payload, options)];
                 case 1:
                     _a.sent();
@@ -244,6 +257,11 @@ export default function VoipCall(_a) {
     }); };
     if (callState === 'IN_CALL' || callState == 'CALLING') {
         //if (!isLoadingCam && !isLoadingMic)         
+        /*if (camError)
+            return (<div>{camError.message}</div>)
+
+        if (micError)
+            return (<div>{micError.message}</div>)*/
         return (<div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
                 <button onClick={cancelCall}>End Call</button>
@@ -251,8 +269,8 @@ export default function VoipCall(_a) {
                 {/*<button onClick={toggleMicMute}>
                 {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
             </button>*/}
-                {localCameraTrack && <LocalVideoTrack track={localCameraTrack} play={true}/>}
-                {localMicrophoneTrack && <LocalAudioTrack track={localMicrophoneTrack}/>}
+                {<LocalVideoTrack track={localCameraTrack} play={true}/>}
+                {<LocalAudioTrack track={localMicrophoneTrack}/>}
                 <div className="video-grid-container">
                     {/* Render each remote video track in its own container */}
                     {videoTracks.map(function (track) { return (<div key={track.getUserId()} className="video-card">
