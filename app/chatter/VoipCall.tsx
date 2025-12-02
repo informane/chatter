@@ -11,13 +11,14 @@ import {
     useLocalMicrophoneTrack,
     useRemoteUsers,
     useRemoteAudioTracks,
-    useRemoteVideoTracks, // Provides list of active video tracks
-    RemoteAudioTrack,   // Component to play audio track
-    RemoteVideoTrack,   // Component to display video track
+    useRemoteVideoTracks,
+    RemoteAudioTrack,
+    RemoteVideoTrack,
+    ILocalTrack
 } from 'agora-rtc-react';
-
+//import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
-
+import AgoraRTC, { IAgoraRTCClient, ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
 
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1: string, email2: string) => {
@@ -52,6 +53,11 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     const { error: micError, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
     const { error: camError, isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
+    const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
+    const localVideoTrack = useRef<ICameraVideoTrack | null>(null);
+
+    //const { localAudioTrack, localVideoTrack, isLoading, error } = usetMicrophoneAndCameraTracks();
+
     const remoteUsers = useRemoteUsers();
     const { audioTracks } = useRemoteAudioTracks(remoteUsers);
     const { videoTracks } = useRemoteVideoTracks(remoteUsers);
@@ -115,6 +121,10 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 console.log('rtm logout');
                 rtmClient.current.logout();
             }
+
+            if (rtcClient) {
+                rtcClient.leave();
+            }
         };
     }, []);
 
@@ -124,9 +134,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
 
+        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+        //await rtcClient.publish([audioTrack, videoTrack]);
+        await rtcClient.publish([localAudioTrack.current!, localVideoTrack.current!] as unknown as ILocalTrack[]);
+        /*while (isLoadingCam || isLoadingMic) { }
+        await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);*/
 
-        while (isLoadingCam || isLoadingMic) { }
-        await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
         console.log("Publish success!");
     }, []);
 
@@ -140,8 +153,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 customType: "CALL_END",
                 channelType: "USER",
             };
-            await rtmClient.current.publish(getUserId(remoteUserEmail), payload, options);
-
+            if (rtmClient.current) {
+                await rtmClient.current.publish(getUserId(remoteUserEmail), payload, options);
+            }
         }
         console.log("CAll state:", callState);
         await rtcClient.leave();
@@ -181,7 +195,11 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     if (callState === 'IN_CALL' || callState == 'CALLING') {
 
         //if (!isLoadingCam && !isLoadingMic)         
+        if (camError)
+            return (<div>{camError.message}</div>)
 
+        if (micError)
+            return (<div>{micError.message}</div>)
         return (
             <div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
