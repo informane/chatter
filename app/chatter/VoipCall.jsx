@@ -82,6 +82,7 @@ export default function VoipCall(_a) {
     //const { localAudioTrack, localVideoTrack, isLoading, error } = useMicrophoneAndCameraTracks();
     var _d = useLocalMicrophoneTrack(), micError = _d.error, isLoadingMic = _d.isLoading, localMicrophoneTrack = _d.localMicrophoneTrack;
     var _e = useLocalCameraTrack(), camError = _e.error, isLoadingCam = _e.isLoading, localCameraTrack = _e.localCameraTrack;
+    var isLoadingDevices = isLoadingCam || isLoadingMic;
     /*const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
     const localVideoTrack = useRef<ICameraVideoTrack | null>(null);*/
     //const { localAudioTrack, localVideoTrack, isLoading, error } = usetMicrophoneAndCameraTracks();
@@ -133,7 +134,7 @@ export default function VoipCall(_a) {
                                 setCallState('RECEIVING_CALL');
                             }
                             else if (signal === 'CALL_ANSWERED') {
-                                handleJoin();
+                                handleJoin(localCameraTrack, localMicrophoneTrack);
                             }
                             else if (signal === 'CALL_END') {
                                 setCallState('IDLE');
@@ -144,9 +145,11 @@ export default function VoipCall(_a) {
                 }
             });
         }); };
-        init();
+        if (!isLoadingDevices) {
+            init();
+        }
         return function () {
-            if (rtmClient) {
+            if (rtmClient.current) {
                 console.log('rtm logout');
                 rtmClient.current.logout();
             }
@@ -154,8 +157,8 @@ export default function VoipCall(_a) {
                 rtcClient.leave();
             }
         };
-    }, []);
-    var handleJoin = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
+    }, [isLoadingDevices, localCameraTrack, localMicrophoneTrack]);
+    var handleJoin = function (localCameraTrack, localMicrophoneTrack) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -163,25 +166,19 @@ export default function VoipCall(_a) {
                     return [4 /*yield*/, rtcClient.join(appId, channel, rtcToken.current, uid.current)];
                 case 1:
                     _a.sent();
-                    //const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-                    /*const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-                    const videoTrack = await AgoraRTC.createCameraVideoTrack();
-                    localAudioTrack.current = audioTrack;
-                    localVideoTrack.current = videoTrack;
-                    if(audioTrack && videoTrack){
-                        await rtcClient.publish([localAudioTrack.current, localVideoTrack.current] as unknown as ILocalTrack);
-                    } else throw new Error('no audio or video track!');*/
-                    //await rtcClient.publish([localAudioTrack!, localVideoTrack!] as unknown as ILocalTrack[]);
+                    console.log(isLoadingCam, isLoadingMic, localCameraTrack);
                     while (isLoadingCam || isLoadingMic) { }
+                    console.log(isLoadingCam, isLoadingMic, localCameraTrack);
+                    //console.log('cam error msgs', camError.message);
                     return [4 /*yield*/, rtcClient.publish([localCameraTrack, localMicrophoneTrack])];
                 case 2:
+                    //console.log('cam error msgs', camError.message);
                     _a.sent();
-                    //await rtcClient.publish(localCameraTrack);
                     console.log("Publish success!");
                     return [2 /*return*/];
             }
         });
-    }); }, []);
+    }); };
     var handleLeave = useCallback(function () { return __awaiter(_this, void 0, void 0, function () {
         var payload, options;
         return __generator(this, function (_a) {
@@ -230,7 +227,11 @@ export default function VoipCall(_a) {
         var payload, options;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, handleJoin()];
+                case 0:
+                    console.log(isLoadingDevices, localCameraTrack, localMicrophoneTrack);
+                    while (isLoadingDevices) { }
+                    console.log(isLoadingDevices, localCameraTrack, localMicrophoneTrack);
+                    return [4 /*yield*/, handleJoin(localCameraTrack, localMicrophoneTrack)];
                 case 1:
                     _a.sent();
                     setCallState('IN_CALL');
@@ -259,11 +260,10 @@ export default function VoipCall(_a) {
     }); };
     if (callState === 'IN_CALL' || callState == 'CALLING') {
         //if (!isLoadingCam && !isLoadingMic)         
-        /*if (camError)
-            return (<div>{camError.message}</div>)
-
+        if (camError)
+            return (<div>{camError.message}</div>);
         if (micError)
-            return (<div>{micError.message}</div>)*/
+            return (<div>{micError.message}</div>);
         return (<div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
                 <button onClick={cancelCall}>End Call</button>

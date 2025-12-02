@@ -62,8 +62,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     const remoteUsers = useRemoteUsers();
     const { audioTracks } = useRemoteAudioTracks(remoteUsers);
     const { videoTracks } = useRemoteVideoTracks(remoteUsers);
-    console.log(remoteUsers, currentUserEmail, targetUserEmail);
-    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
     //audioTracks.map((track) => { track.play(); track.setVolume(100) });
 
 
@@ -96,6 +94,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             uid.current = data.numericUid;
 
             console.log(rtcToken.current, uid.current);
+            console.log(remoteUsers, currentUserEmail, targetUserEmail, channel);
             const client = new RTM(appId, userId);
             await client.login({ token: data.rtmToken });
             rtmClient.current = client;
@@ -114,9 +113,10 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 }
             });
         }
-
-        init()
-
+        console.log("camera, mic track", isLoadingCam, isLoadingMic, localCameraTrack,localMicrophoneTrack);
+        if (!isLoadingDevices) {
+            init()
+        }
         return () => {
             if (rtmClient.current) {
                 console.log('rtm logout');
@@ -127,16 +127,14 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 rtcClient.leave();
             }
         };
-    }, [isLoadingDevices, localCameraTrack, localMicrophoneTrack]);
+    }, [isLoadingDevices]);
 
 
     var handleJoin = async (localCameraTrack, localMicrophoneTrack) => {
 
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
-
-        console.log(isLoadingCam, isLoadingMic, localCameraTrack);
-        while (isLoadingCam || isLoadingMic) { }
+    
         console.log(isLoadingCam, isLoadingMic, localCameraTrack);
         //console.log('cam error msgs', camError.message);
         await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
@@ -175,8 +173,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     };
 
     const answerCall = async () => {
-        console.log(isLoadingDevices, localCameraTrack, localMicrophoneTrack)
-        while (isLoadingDevices) {}
         console.log(isLoadingDevices, localCameraTrack, localMicrophoneTrack)
         await handleJoin(localCameraTrack, localMicrophoneTrack);
         setCallState('IN_CALL');

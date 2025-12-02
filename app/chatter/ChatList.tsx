@@ -14,6 +14,7 @@ import UserSearch from './UserSearch';
 function ChatList({newMessageChatId, chat_id, onChangeChatId, shown }: ChatterProps) {
     //if chatlist is shown
     const [isShown, setIsShown] = useState(shown);
+    const [chatId, setChatId] = useState(chat_id);
     const [NewMessageChatId, setNewMessageChatId] = useState(null);
     const [chatListChanged, setChatListChanged] = useState(true);
     const [userId, setUserId] = useState(null);
@@ -99,8 +100,8 @@ function ChatList({newMessageChatId, chat_id, onChangeChatId, shown }: ChatterPr
 
     function chooseChat(new_chat_id: string) {
         setIsShown(false);
-        chat_id = new_chat_id;
-        onChangeChatId(chat_id);
+        setChatId(new_chat_id);
+        onChangeChatId(new_chat_id);
     }
 
     function renderChatList() {
@@ -116,7 +117,7 @@ function ChatList({newMessageChatId, chat_id, onChangeChatId, shown }: ChatterPr
         //<VoipCall userEmail={session.user.email} targetUserEmail={Chats[index].users[0].email} />
         const chatList = Chats.map((value, index) => {
             return (
-                <div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={(e) => chooseChat(Chats[index]._id)}>
+                <div key={Chats[index]._id} className={Chats[index]._id === chatId ? 'chat chosen' : 'chat'} onClick={(e) => chooseChat(Chats[index]._id)}>
                     <div className='notification'>
                         {Chats[index].unreadCount ? Chats[index].unreadCount : 0}
                     </div>

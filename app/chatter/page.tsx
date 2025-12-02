@@ -4,7 +4,7 @@ import Header from './Header';
 import ChatList from './ChatList';
 import AgoraMessageWrapper from './AgoraMessageDynamic'
 import { useSession, signIn, signOut } from "next-auth/react"
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import './styles.scss';
 import AgoraMessasgeWrapper from './AgoraMessageDynamic';
 import VoipCallWrapper from './VoipCallDynamic';
@@ -13,14 +13,14 @@ import { getConversationUser } from "app/lib/chatter";
 export default function Chatter() {
 
   const { data: session, status } = useSession();
-  const [chatId, setChatId] = useState(null);
+  const chatId = useRef(null);
   const [newMessageChatId, setNewMessageChatId] = useState(null);
   const [shown, setShown] = useState(false);
-  // const [chatListChanged, setChatListChanged] = useState(true);
   const [chatList, setChatList] = useState([]);
-  //              <Messages chat_id={chatId} onChangeChatId={setChatId} />
-  //              <InputMessage chat_id={chatId} onChangeChatId={setChatId} />
 
+  function setChatId(chat_id) {
+    chatId.current = chat_id;
+  }
 
   useEffect(() => {
 
@@ -52,9 +52,9 @@ export default function Chatter() {
   //console.log(chatList)
   const chatWindowsMap = chatList.map((value, index) => {
     return (
-      <div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
+      <div className={chatId.current == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
         <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />
-        {/*session.user.email && <AgoraMessasgeWrapper shown={chatId == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
+        {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
       </div>
     )
   })
@@ -67,7 +67,7 @@ export default function Chatter() {
         </header>
         <section className='chat-window'>
           <aside>
-            <ChatList chat_id={chatId} onChangeChatId={setChatId} newMessageChatId={newMessageChatId} shown={false} />
+            <ChatList chat_id={chatId.current} onChangeChatId={setChatId} newMessageChatId={newMessageChatId} shown={false} />
           </aside>
           {chatWindowsMap}
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}
