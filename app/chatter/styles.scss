@@ -271,15 +271,30 @@ body {
                 @include btn-primary(#d3d3d3);
             }
 
-            .video-local-grid-container {
-                max-height: 30% !important;
-                max-width: 30% !important;
-                position: absolute !important;
-            }
-            .video-grid-container {
-                height: 90% !important;
-                width: 90% !important;
-                position: relative !important;
+            .video-container {
+
+                .video-local {
+                    width: 100% !important;
+                    height: 100% !important;
+                    position: absolute !important;
+
+                    video {
+                        max-height: 30% !important;
+                        max-width: 30% !important;
+
+                    }
+                }
+
+                .video-remote {
+                    height: 90% !important;
+                    width: 90% !important;
+                    position: relative !important;
+
+                    video {
+                        width: 100% !important;
+                        height: 100% !important;
+                    }
+                }
             }
         }
 

@@ -192,8 +192,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     };
 
     const cancelCall = async () => {
-        await handleLeave();
         setCallState('IDLE');
+        await handleLeave();
+
     }
 
     if (callState === 'IN_CALL' || callState == 'CALLING') {
@@ -212,31 +213,33 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 {/*<button onClick={toggleMicMute}>
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>*/}
-                <div className="video-local-grid-container">
-                    {<LocalVideoTrack track={localCameraTrack} play={true} />}
-                </div>
-                {<LocalAudioTrack track={localMicrophoneTrack} play={true} />}
-                <div className="video-grid-container">
-                    {/* Render each remote video track in its own container */}
-                    {videoTracks.map((track) => (
-                        <div key={track.getUserId()} className="video-card">
-                            <RemoteVideoTrack
+                <div className='video-container'>
+                    <div className="video-local">
+                        {<LocalVideoTrack track={localCameraTrack} play={true} />}
+                    </div>
+                    {<LocalAudioTrack track={localMicrophoneTrack} play={true} />}
+                    <div className="video-remote">
+                        {/* Render each remote video track in its own container */}
+                        {videoTracks.map((track) => (
+                            <div key={track.getUserId()} className="video-card">
+                                <RemoteVideoTrack
+                                    track={track}
+                                    play={true}
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                                <p>User UID: {track.getUserId()}</p>
+                            </div>
+                        ))}
+
+                        {/* Render each remote audio track (audio only, no UI needed) */}
+                        {audioTracks.map((track) => (
+                            <RemoteAudioTrack
+                                key={track.getUserId()}
                                 track={track}
                                 play={true}
-                                style={{ width: '100%', height: '100%' }}
                             />
-                            <p>User UID: {track.getUserId()}</p>
-                        </div>
-                    ))}
-
-                    {/* Render each remote audio track (audio only, no UI needed) */}
-                    {audioTracks.map((track) => (
-                        <RemoteAudioTrack
-                            key={track.getUserId()}
-                            track={track}
-                            play={true}
-                        />
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         );
