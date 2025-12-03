@@ -160,7 +160,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         }
         /*if (localCameraTrack && rtcClient) await rtcClient.unpublish(localCameraTrack);
         if (localMicrophoneTrack && rtcClient) await rtcClient.unpublish(localMicrophoneTrack);*/
-        if(rtcClient) await rtcClient.leave();
+        if (rtcClient) await rtcClient.leave();
     });
 
     // UI Actions
@@ -212,7 +212,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 {/*<button onClick={toggleMicMute}>
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>*/}
-                {<LocalVideoTrack track={localCameraTrack} play={true} />}
+                <div className="video-local-grid-container">
+                    {<LocalVideoTrack track={localCameraTrack} play={true} />}
+                </div>
                 {<LocalAudioTrack track={localMicrophoneTrack} play={true} />}
                 <div className="video-grid-container">
                     {/* Render each remote video track in its own container */}

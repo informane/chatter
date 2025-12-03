@@ -271,12 +271,12 @@ body {
                 @include btn-primary(#d3d3d3);
             }
 
-           video {
+            .video-local-grid-container {
                 max-height: 30% !important;
                 max-width: 30% !important;
                 position: absolute !important;
             }
-            .video-grid-container video {
+            .video-grid-container {
                 height: 90% !important;
                 width: 90% !important;
                 position: relative !important;
