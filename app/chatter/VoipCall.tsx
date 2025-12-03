@@ -90,7 +90,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             const data = await response.json();
             if (!data.rtmToken || !data.rtcToken) {
                 console.error("Token fetch failed or token is empty.");
-                return; 
+                return;
             }
 
             rtcToken.current = data.rtcToken;
@@ -115,12 +115,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 }
             });
         }
-        console.log("tracks: ", isLoadingDevices, localCameraTrack,localMicrophoneTrack);
+        console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack);
         if (!isLoadingDevices) {
-            setTimeout(function() {
+            setTimeout(function () {
                 init()
             }, 1000);
-            
+
         }
         return () => {
             if (rtmClient.current) {
@@ -132,7 +132,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 rtcClient.leave();
             }
         };
-    }, [isLoadingDevices, localCameraTrack,localMicrophoneTrack]);
+    }, [isLoadingDevices, localCameraTrack, localMicrophoneTrack]);
 
 
     var handleJoin = async (localCameraTrack, localMicrophoneTrack) => {
@@ -158,8 +158,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
         }
-        await rtcClient.unpublish([localCameraTrack, localMicrophoneTrack]);
-        await rtcClient.leave();
+        if (localCameraTrack) await rtcClient.unpublish(localCameraTrack);
+        if (localMicrophoneTrack) await rtcClient.unpublish(localMicrophoneTrack);
+        if(rtcClient) await rtcClient.leave();
     });
 
     // UI Actions
@@ -219,7 +220,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                         <div key={track.getUserId()} className="video-card">
                             <RemoteVideoTrack
                                 track={track}
-                                play={true} 
+                                play={true}
                                 style={{ width: '100%', height: '100%' }}
                             />
                             <p>User UID: {track.getUserId()}</p>
@@ -231,7 +232,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                         <RemoteAudioTrack
                             key={track.getUserId()}
                             track={track}
-                            play={true} 
+                            play={true}
                         />
                     ))}
                 </div>
