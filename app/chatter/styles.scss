@@ -263,19 +263,20 @@ body {
 
         .call-wrapper {
             padding: 7px;
+            height: 100%;
             text-align: center;
-            background-color: $header-color;
+            background-color: rgb(89, 223, 89);
 
             button {
                 @include btn-primary(#d3d3d3);
             }
 
-            video {
-                height: 30% !important;
-                width: 30% !important;
+           video {
+                max-height: 30%;
+                max-width: 30% !important;
                 position: absolute !important;
             }
-            video.video-grid-container {
+            .video-grid-container video {
                 height: 90% !important;
                 width: 90% !important;
                 position: relative !important;
