@@ -158,8 +158,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
         }
-        if (localCameraTrack) await rtcClient.unpublish(localCameraTrack);
-        if (localMicrophoneTrack) await rtcClient.unpublish(localMicrophoneTrack);
+        if (localCameraTrack && rtcClient) await rtcClient.unpublish(localCameraTrack);
+        if (localMicrophoneTrack && rtcClient) await rtcClient.unpublish(localMicrophoneTrack);
         if(rtcClient) await rtcClient.leave();
     });
 
