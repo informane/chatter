@@ -89,8 +89,6 @@ export default function VoipCall(_a) {
     var remoteUsers = useRemoteUsers();
     var audioTracks = useRemoteAudioTracks(remoteUsers).audioTracks;
     var videoTracks = useRemoteVideoTracks(remoteUsers).videoTracks;
-    console.log(remoteUsers, currentUserEmail, targetUserEmail);
-    //const { audioTracks } = useRemoteAudioTracks(remoteUsers);
     //audioTracks.map((track) => { track.play(); track.setVolume(100) });
     //usePublish([localMicrophoneTrack, localCameraTrack]);
     var _f = __read(useState(false), 2), isMicMuted = _f[0], setIsMicMuted = _f[1];
@@ -116,12 +114,12 @@ export default function VoipCall(_a) {
                         data = _a.sent();
                         if (!data.rtmToken || !data.rtcToken) {
                             console.error("Token fetch failed or token is empty.");
-                            return [2 /*return*/]; // Stop execution if no token
+                            return [2 /*return*/];
                         }
-                        //setUid(data.numericUId);
                         rtcToken.current = data.rtcToken;
                         uid.current = data.numericUid;
                         console.log(rtcToken.current, uid.current);
+                        console.log(remoteUsers, currentUserEmail, targetUserEmail, channel);
                         client = new RTM(appId, userId);
                         return [4 /*yield*/, client.login({ token: data.rtmToken })];
                     case 3:
@@ -145,6 +143,7 @@ export default function VoipCall(_a) {
                 }
             });
         }); };
+        console.log("camera, mic track", isLoadingDevices, localCameraTrack, localMicrophoneTrack);
         if (!isLoadingDevices) {
             init();
         }
@@ -157,7 +156,7 @@ export default function VoipCall(_a) {
                 rtcClient.leave();
             }
         };
-    }, [isLoadingDevices, localCameraTrack, localMicrophoneTrack]);
+    }, [isLoadingDevices]);
     var handleJoin = function (localCameraTrack, localMicrophoneTrack) { return __awaiter(_this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -166,8 +165,6 @@ export default function VoipCall(_a) {
                     return [4 /*yield*/, rtcClient.join(appId, channel, rtcToken.current, uid.current)];
                 case 1:
                     _a.sent();
-                    console.log(isLoadingCam, isLoadingMic, localCameraTrack);
-                    while (isLoadingCam || isLoadingMic) { }
                     console.log(isLoadingCam, isLoadingMic, localCameraTrack);
                     //console.log('cam error msgs', camError.message);
                     return [4 /*yield*/, rtcClient.publish([localCameraTrack, localMicrophoneTrack])];
@@ -228,8 +225,6 @@ export default function VoipCall(_a) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log(isLoadingDevices, localCameraTrack, localMicrophoneTrack);
-                    while (isLoadingDevices) { }
                     console.log(isLoadingDevices, localCameraTrack, localMicrophoneTrack);
                     return [4 /*yield*/, handleJoin(localCameraTrack, localMicrophoneTrack)];
                 case 1:

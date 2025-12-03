@@ -29,10 +29,12 @@ const getDirectChannelName = (email1: string, email2: string) => {
     return `direct_call_${sortedEmails[0]}_${sortedEmails[1]}`;
 };
 
-const getUserId = (email: string) => {
-    email = email.replaceAll('.', '');
-    return email;
-}
+const getUserId = (email1: string, email2: string) => {
+    email1 = email1.replaceAll('.', '');
+    email2 = email2.replaceAll('.', '');
+
+    return `direct_call_${email1}_${email2}`;
+};
 
 export default function VoipCall({ currentUserEmail, targetUserEmail }: { currentUserEmail: string, targetUserEmail: string }) {
 
@@ -46,7 +48,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     const uid = useRef(null);
 
     const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID;
-    const userId = getUserId(currentUserEmail);
+    const userId = getUserId(currentUserEmail, targetUserEmail);
+    console.log('userId: ', userId)
     const channel = getDirectChannelName(currentUserEmail, targetUserEmail);
 
     //const { localAudioTrack, localVideoTrack, isLoading, error } = useMicrophoneAndCameraTracks();
@@ -87,9 +90,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             const data = await response.json();
             if (!data.rtmToken || !data.rtcToken) {
                 console.error("Token fetch failed or token is empty.");
-                return; // Stop execution if no token
+                return; 
             }
-            //setUid(data.numericUId);
+
             rtcToken.current = data.rtcToken;
             uid.current = data.numericUid;
 
@@ -113,9 +116,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 }
             });
         }
-        console.log("camera, mic track", isLoadingCam, isLoadingMic, localCameraTrack,localMicrophoneTrack);
+        console.log("tracks: ", isLoadingDevices, localCameraTrack,localMicrophoneTrack);
         if (!isLoadingDevices) {
-            init()
+            setTimeout(function() {
+                init()
+            }, 1000);
+            
         }
         return () => {
             if (rtmClient.current) {
@@ -136,7 +142,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
     
         console.log(isLoadingCam, isLoadingMic, localCameraTrack);
-        //console.log('cam error msgs', camError.message);
+
         await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
         console.log("Publish success!");
     }
@@ -152,14 +158,14 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 channelType: "USER",
             };
             if (rtmClient.current) {
-                await rtmClient.current.publish(getUserId(remoteUserEmail), payload, options);
+                await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
         }
         await rtcClient.leave();
     }, [callState]);
 
     // UI Actions
-    const callUser = async (targetEmail: string) => {
+    const callUser = async () => {
 
         setCallState('CALLING');
         const payload = 'CALL_INVITE';
@@ -168,7 +174,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             channelType: "USER",
         };
         if (rtmClient.current) {
-            await rtmClient.current.publish(getUserId(targetEmail), payload, options);
+            await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
         }
     };
 
@@ -182,7 +188,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             customType: "CALL_ANSWERED",
             channelType: "USER",
         }
-        await rtmClient.current.publish(getUserId(targetUserEmail), payload, options);
+        await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
 
     };
 
@@ -250,7 +256,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     // IDLE state (Lobby UI)
     return (
         <div className='call-wrapper'>
-            <button onClick={() => callUser(targetUserEmail)}>
+            <button onClick={() => callUser()}>
                 Call User
             </button>
         </div>

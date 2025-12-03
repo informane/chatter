@@ -63,16 +63,17 @@ function ChatList(_a) {
     var newMessageChatId = _a.newMessageChatId, chat_id = _a.chat_id, onChangeChatId = _a.onChangeChatId, shown = _a.shown;
     //if chatlist is shown
     var _c = __read(useState(shown), 2), isShown = _c[0], setIsShown = _c[1];
-    var _d = __read(useState(null), 2), NewMessageChatId = _d[0], setNewMessageChatId = _d[1];
-    var _e = __read(useState(true), 2), chatListChanged = _e[0], setChatListChanged = _e[1];
-    var _f = __read(useState(null), 2), userId = _f[0], setUserId = _f[1];
+    var _d = __read(useState(chat_id), 2), chatId = _d[0], setChatId = _d[1];
+    var _e = __read(useState(null), 2), NewMessageChatId = _e[0], setNewMessageChatId = _e[1];
+    var _f = __read(useState(true), 2), chatListChanged = _f[0], setChatListChanged = _f[1];
+    var _g = __read(useState(null), 2), userId = _g[0], setUserId = _g[1];
     var eventSourceRef = useRef(null);
-    var _g = useSession(), session = _g.data, status = _g.status;
-    var _h = __read(useState([]), 2), Chats = _h[0], setChats = _h[1];
+    var _h = useSession(), session = _h.data, status = _h.status;
+    var _j = __read(useState([]), 2), Chats = _j[0], setChats = _j[1];
     //const [state, formAction, isPending] = useActionState(addChat, {});
     var searchParams = useSearchParams();
-    var _j = __read(useState((_b = searchParams.get('chat-search')) !== null && _b !== void 0 ? _b : ''), 2), term = _j[0], setTerm = _j[1];
-    var _k = __read(useState({ message: null }), 2), error = _k[0], setError = _k[1];
+    var _k = __read(useState((_b = searchParams.get('chat-search')) !== null && _b !== void 0 ? _b : ''), 2), term = _k[0], setTerm = _k[1];
+    var _l = __read(useState({ message: null }), 2), error = _l[0], setError = _l[1];
     useEffect(function () {
         function initialFetch(term) {
             return __awaiter(this, void 0, void 0, function () {
@@ -160,8 +161,8 @@ function ChatList(_a) {
     }
     function chooseChat(new_chat_id) {
         setIsShown(false);
-        chat_id = new_chat_id;
-        onChangeChatId(chat_id);
+        setChatId(new_chat_id);
+        onChangeChatId(new_chat_id);
     }
     function renderChatList() {
         if (!Chats.length)
@@ -173,7 +174,7 @@ function ChatList(_a) {
                 </>);
         //<VoipCall userEmail={session.user.email} targetUserEmail={Chats[index].users[0].email} />
         var chatList = Chats.map(function (value, index) {
-            return (<div key={Chats[index]._id} className={Chats[index]._id === chat_id ? 'chat chosen' : 'chat'} onClick={function (e) { return chooseChat(Chats[index]._id); }}>
+            return (<div key={Chats[index]._id} className={Chats[index]._id === chatId ? 'chat chosen' : 'chat'} onClick={function (e) { return chooseChat(Chats[index]._id); }}>
                     <div className='notification'>
                         {Chats[index].unreadCount ? Chats[index].unreadCount : 0}
                     </div>
