@@ -274,11 +274,15 @@ body {
             .video-container {
                 width: 100%;
                 height: calc(100% - 50px);
+                position: relative;
 
                 .video-local {
                     width: 100% !important;
                     height: 100% !important;
+                    max-width: 100% !important;
+                    max-height: 100% !important;
                     position: absolute !important;
+                    z-index: 9;
 
                     video {
                         max-height: 30% !important;
