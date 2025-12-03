@@ -36,6 +36,18 @@ const getUserId = (email1: string, email2: string) => {
     return `direct_call_${email1}_${email2}`;
 };
 
+function isTrackPublished(agoraClient, trackToCheck) {
+  // Check if the trackToCheck exists within the client's internal list of published tracks
+  const published = agoraClient.localTracks.includes(trackToCheck);
+  
+  if (published) {
+    console.log("The track is currently published.");
+  } else {
+    console.log("The track is not currently published.");
+  }
+  return published;
+}
+
 export default function VoipCall({ currentUserEmail, targetUserEmail }: { currentUserEmail: string, targetUserEmail: string }) {
 
     const { RTM } = AgoraRTM;
@@ -158,8 +170,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
         }
-        /*if (localCameraTrack && rtcClient) await rtcClient.unpublish(localCameraTrack);
-        if (localMicrophoneTrack && rtcClient) await rtcClient.unpublish(localMicrophoneTrack);*/
+        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack)) await rtcClient.unpublish(localCameraTrack);
+        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack)) await rtcClient.unpublish(localMicrophoneTrack);
         if (rtcClient) await rtcClient.leave();
     });
 
