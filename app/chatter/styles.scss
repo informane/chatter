@@ -262,7 +262,6 @@ body {
         flex: 1;
 
         .call-wrapper {
-            padding: 7px;
             height: 100%;
             text-align: center;
             position: relative;
@@ -274,7 +273,7 @@ body {
 
             .video-container {
                 width: 100%;
-                height: 100%;
+                height: calc(100% - 50px);
 
                 .video-local {
                     width: 100% !important;
@@ -289,9 +288,16 @@ body {
                 }
 
                 .video-remote {
-                    height: 90% !important;
-                    width: 90% !important;
+                    height: 100% !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    max-height: 100% !important;
                     position: relative !important;
+
+                    div {
+                        max-width: 100% !important;
+                        max-height: 100% !important;
+                    }
 
                     video {
                         width: 100% !important;
