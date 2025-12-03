@@ -159,6 +159,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             }
         }
         await rtcClient.leave();
+        await rtcClient.unpublish([localCameraTrack, localMicrophoneTrack]);
     });
 
     // UI Actions
@@ -211,15 +212,14 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
                 </button>*/}
                 {<LocalVideoTrack track={localCameraTrack} play={true} />}
-                {<LocalAudioTrack track={localMicrophoneTrack} />}
+                {<LocalAudioTrack track={localMicrophoneTrack} play={true} />}
                 <div className="video-grid-container">
                     {/* Render each remote video track in its own container */}
                     {videoTracks.map((track) => (
                         <div key={track.getUserId()} className="video-card">
                             <RemoteVideoTrack
                                 track={track}
-                                play={true} // Ensures playback starts
-                                // Style the container/video element here if needed
+                                play={true} 
                                 style={{ width: '100%', height: '100%' }}
                             />
                             <p>User UID: {track.getUserId()}</p>
@@ -231,7 +231,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                         <RemoteAudioTrack
                             key={track.getUserId()}
                             track={track}
-                            play={true} // Ensures audio playback
+                            play={true} 
                         />
                     ))}
                 </div>
