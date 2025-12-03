@@ -132,7 +132,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 rtcClient.leave();
             }
         };
-    }, [isLoadingDevices, localCameraTrack, localMicrophoneTrack]);
+    }, [isLoadingDevices/*, localCameraTrack, localMicrophoneTrack*/]);
 
 
     var handleJoin = async (localCameraTrack, localMicrophoneTrack) => {
