@@ -96,7 +96,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             rtcToken.current = data.rtcToken;
             uid.current = data.numericUid;
 
-            console.log(rtcToken.current, uid.current);
             console.log(remoteUsers, currentUserEmail, targetUserEmail, channel);
             const client = new RTM(appId, userId);
             await client.login({ token: data.rtmToken });
@@ -133,21 +132,19 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 rtcClient.leave();
             }
         };
-    }, [isLoadingDevices]);
+    }, [isLoadingDevices, localCameraTrack,localMicrophoneTrack]);
 
 
     var handleJoin = async (localCameraTrack, localMicrophoneTrack) => {
 
         console.log(appId, channel, rtcToken.current);
         await rtcClient.join(appId, channel, rtcToken.current, uid.current);
-    
-        console.log(isLoadingCam, isLoadingMic, localCameraTrack);
 
         await rtcClient.publish([localCameraTrack, localMicrophoneTrack]);
         console.log("Publish success!");
     }
 
-    var handleLeave = useCallback(async () => {
+    var handleLeave = (async () => {
 
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
             // Notify the other user the call ended
@@ -162,7 +159,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             }
         }
         await rtcClient.leave();
-    }, [callState]);
+    });
 
     // UI Actions
     const callUser = async () => {
@@ -179,7 +176,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     };
 
     const answerCall = async () => {
-        console.log(isLoadingDevices, localCameraTrack, localMicrophoneTrack)
+        console.log('tracks: ', isLoadingDevices, localCameraTrack, localMicrophoneTrack)
         await handleJoin(localCameraTrack, localMicrophoneTrack);
         setCallState('IN_CALL');
 
