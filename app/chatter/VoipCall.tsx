@@ -37,15 +37,14 @@ const getUserId = (email1: string, email2: string) => {
 };
 
 function isTrackPublished(agoraClient, trackToCheck) {
-  // Check if the trackToCheck exists within the client's internal list of published tracks
-  const published = agoraClient.localTracks.includes(trackToCheck);
-  
-  if (published) {
-    console.log("The track is currently published.");
-  } else {
-    console.log("The track is not currently published.");
-  }
-  return published;
+    const published = agoraClient.localTracks.includes(trackToCheck);
+
+    if (published) {
+        console.log("The track is currently published.");
+    } else {
+        console.log("The track is not currently published.");
+    }
+    return published;
 }
 
 export default function VoipCall({ currentUserEmail, targetUserEmail }: { currentUserEmail: string, targetUserEmail: string }) {
@@ -85,14 +84,25 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     const [isMicMuted, setIsMicMuted] = useState(false);
 
-    /*const toggleMicMute = () => {
+    const toggleMicMute = () => {
         if (localMicrophoneTrack) {
             localMicrophoneTrack.setEnabled(true);
             const newMutedState = !isMicMuted;
             localMicrophoneTrack.setMuted(newMutedState);
-            setIsMicMuted(newMutedState); // Update React state for UI
+            setIsMicMuted(newMutedState);
         }
-    };*/
+    };
+
+    const [isCameraMuted, setIsCameraMuted] = useState(false);
+
+    const toggleCameraMute = () => {
+        if (localCameraTrack) {
+            localCameraTrack.setEnabled(true);
+            const newMutedState = !isCameraMuted;
+            localCameraTrack.setMuted(newMutedState);
+            setIsCameraMuted(newMutedState);
+        }
+    };
     // Initialize RTM Client (Signaling) and RTC options(Voice Calling)
     useEffect(() => {
 
@@ -170,8 +180,10 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
         }
-        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack)) await rtcClient.unpublish(localCameraTrack);
-        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack)) await rtcClient.unpublish(localMicrophoneTrack);
+        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack))
+            await rtcClient.unpublish(localCameraTrack);
+        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
+            await rtcClient.unpublish(localMicrophoneTrack);
         if (rtcClient) await rtcClient.leave();
     });
 
@@ -221,15 +233,17 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             <div className='call-wrapper'>
                 <p>In call with: {remoteUserEmail}</p>
                 <button onClick={cancelCall}>End Call</button>
-
-                {/*<button onClick={toggleMicMute}>
+                <button onClick={toggleCameraMute}>
+                    {isCameraMuted ? 'Unmute Video 📸' : 'Mute Video 🚫'}
+                </button>
+                {<button onClick={toggleMicMute}>
                     {isMicMuted ? 'Unmute Mic 🔇' : 'Mute Mic 🎤'}
-                </button>*/}
+                </button>}
                 <div className='video-container'>
                     <div className="video-local">
                         {<LocalVideoTrack track={localCameraTrack} play={true} />}
+                        {<LocalAudioTrack track={localMicrophoneTrack} play={true} />}
                     </div>
-                    {<LocalAudioTrack track={localMicrophoneTrack} play={true} />}
                     <div className="video-remote">
                         {/* Render each remote video track in its own container */}
                         {videoTracks.map((track) => (
