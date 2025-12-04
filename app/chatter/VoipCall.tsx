@@ -294,7 +294,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                                 <RemoteVideoTrack
                                     track={track}
                                     play={true}
-                                    style={{ width: '100%', height: '100%' }}
                                 />
                                 <p>User UID: {track.getUserId()}</p>
                             </div>
