@@ -190,7 +190,7 @@ body {
 
                 @media(max-width: 450px) {
                     position: absolute;
-                    z-index: 1;
+                    z-index: 99;
                 }
 
                 /*background-color: rgb(136, 190, 136);*/
@@ -202,7 +202,7 @@ body {
                 .aside-hide-btn {
                     @include btn-primary(blue);
                     position: absolute;
-                    top: -80;
+                    top: -80px;
                     font-size: 40px;
                     color: wheat;
                     cursor: pointer;
@@ -425,6 +425,7 @@ body {
 
         .users-list {
 
+            z-index: 99;
             .user {
                 margin: 15px 0;
                 font-weight: 600;
