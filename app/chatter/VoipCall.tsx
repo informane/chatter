@@ -47,6 +47,29 @@ function isTrackPublished(agoraClient, trackToCheck) {
     return published;
 }
 
+/*const checkUserStatus = async (rtmClient, targetUserId: string, channelName: string) => {
+  try {
+    // This fetches the activity of specific users in a specific channel
+    const response = await rtmClient.presence.getUsers({
+      channelName: channelName,
+      channelType: 'message', // Or 'stream' if using RTC channels
+      userIds: [targetUserId]
+    });
+
+    if (response.users && response.users.length > 0) {
+      console.log(`User ${targetUserId} is currently online in ${channelName}.`);
+      return true;
+    } else {
+      console.log(`User ${targetUserId} is offline or not in ${channelName}.`);
+      return false;
+    }
+
+  } catch (error) {
+    console.error("Failed to query user presence:", error);
+    return false;
+  }
+};*/
+
 export default function VoipCall({ currentUserEmail, targetUserEmail }: { currentUserEmail: string, targetUserEmail: string }) {
 
     const { RTM } = AgoraRTM;
@@ -67,7 +90,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     const { error: micError, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
     const { error: camError, isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
-    const isLoadingDevices = isLoadingCam || isLoadingMic;
+    const isLoadingDevices = !localMicrophoneTrack || !localCameraTrack;
     /*const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
     const localVideoTrack = useRef<ICameraVideoTrack | null>(null);*/
 
@@ -151,26 +174,24 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             });
         }
 
-        console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
         if (!isLoadingDevices && !isInited.current && !rtmClient.current) {
+
             setTimeout(async function () {
+                console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
                 isInited.current = true;
                 await init()
             }, 3000);
-
         }
         //await new Promise(resolve => setTimeout(resolve, 3000));
         return () => {
 
             if (rtmClient.current) {
-
                 //rtmClient.current.removeEventListener('connection-state-change', handleConnectionStateChange);
                 rtmClient.current.logout();
 
             }
 
             if (rtcClient) {
-
                 rtcClient.leave();
             }
         };
@@ -209,7 +230,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
 
     // UI Actions
     const callUser = async () => {
-
+        
+        //if(!checkUserStatus(rtmClient, getUserId(targetUserEmail, currentUserEmail), channelName: string) {};
         setCallState('CALLING');
         const payload = 'CALL_INVITE';
         const options = {
@@ -217,6 +239,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             channelType: "USER",
         };
         if (rtmClient.current) {
+
             await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
         }
     };
