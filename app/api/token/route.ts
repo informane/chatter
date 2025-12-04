@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { RtcTokenBuilder, RtcRole, RtmTokenBuilder, RtmRole } from 'agora-access-token';
+import { RtcTokenBuilder, RtcRole, RtmTokenBuilder } from 'agora-token';
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -38,7 +38,7 @@ export async function GET(request) {
     numericUid, 
     RtcRole.PUBLISHER, 
     tokenExpire, 
-    //privilegeExpire // V3 of token builder requires 7 arguments
+    privilegeExpire // V3 of token builder requires 7 arguments
   );
 
   // --- Generate RTM Token ---
@@ -47,7 +47,6 @@ export async function GET(request) {
       appId, 
       appCertificate, 
       userId, // Must be a legal, non-empty string ID
-      RtmRole.Rtm_User, 
       tokenExpire
   );
 

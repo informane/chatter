@@ -25,6 +25,28 @@ function isTrackPublished(agoraClient, trackToCheck) {
     }
     return published;
 }
+/*const checkUserStatus = async (rtmClient, targetUserId: string, channelName: string) => {
+  try {
+    // This fetches the activity of specific users in a specific channel
+    const response = await rtmClient.presence.getUsers({
+      channelName: channelName,
+      channelType: 'message', // Or 'stream' if using RTC channels
+      userIds: [targetUserId]
+    });
+
+    if (response.users && response.users.length > 0) {
+      console.log(`User ${targetUserId} is currently online in ${channelName}.`);
+      return true;
+    } else {
+      console.log(`User ${targetUserId} is offline or not in ${channelName}.`);
+      return false;
+    }
+
+  } catch (error) {
+    console.error("Failed to query user presence:", error);
+    return false;
+  }
+};*/
 export default function VoipCall({ currentUserEmail, targetUserEmail }) {
     const { RTM } = AgoraRTM;
     const [callState, setCallState] = useState('IDLE');
@@ -41,7 +63,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
     //const { localAudioTrack, localVideoTrack, isLoading, error } = useMicrophoneAndCameraTracks();
     const { error: micError, isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
     const { error: camError, isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
-    const isLoadingDevices = isLoadingCam || isLoadingMic;
+    const isLoadingDevices = !localMicrophoneTrack || !localCameraTrack;
     /*const localAudioTrack = useRef<IMicrophoneAudioTrack | null>(null);
     const localVideoTrack = useRef<ICameraVideoTrack | null>(null);*/
     //const { localAudioTrack, localVideoTrack, isLoading, error } = usetMicrophoneAndCameraTracks();
@@ -68,6 +90,14 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
             setIsCameraMuted(newMutedState);
         }
     };
+    var handleConnectionStateChange = (state, reason) => {
+        console.log('Connection State Changed:', state, 'Reason:', reason);
+        // This is key: If kicked out due to conflict, manually logout before trying again later
+        if (state === 'ABORTED' && reason === 'UID_CONFLICT') {
+            console.log("Conflict detected, forcing logout to clear session.");
+            rtmClient.current.logout();
+        }
+    };
     // Initialize RTM Client (Signaling) and RTC options(Voice Calling)
     useEffect(() => {
         const init = async () => {
@@ -83,15 +113,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
             const client = new RTM(appId, userId);
             await client.login({ token: data.rtmToken });
             rtmClient.current = client;
-            var handleConnectionStateChange = (state, reason) => {
-                console.log('Connection State Changed:', state, 'Reason:', reason);
-                // This is key: If kicked out due to conflict, manually logout before trying again later
-                if (state === 'ABORTED' && reason === 'UID_CONFLICT') {
-                    console.log("Conflict detected, forcing logout to clear session.");
-                    rtmClient.current.logout();
-                }
-            };
-            // Add the listener immediately
             rtmClient.current.addEventListener('connection-state-change', handleConnectionStateChange);
             rtmClient.current.addEventListener('message', (event) => {
                 const signal = event.customType;
@@ -108,9 +129,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
                 }
             });
         };
-        console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
         if (!isLoadingDevices && !isInited.current && !rtmClient.current) {
             setTimeout(async function () {
+                console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
                 isInited.current = true;
                 await init();
             }, 3000);
@@ -118,7 +139,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
         //await new Promise(resolve => setTimeout(resolve, 3000));
         return () => {
             if (rtmClient.current) {
-                //rtmClient.current.removeEventListener('connection-state-change', handleConnectionStateChange);
+                rtmClient.current.removeEventListener('connection-state-change', handleConnectionStateChange);
                 rtmClient.current.logout();
             }
             if (rtcClient) {
@@ -133,6 +154,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
         console.log("Publish success!");
     };
     var handleLeave = (async () => {
+        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack))
+            await rtcClient.unpublish(localCameraTrack);
+        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
+            await rtcClient.unpublish(localMicrophoneTrack);
+        if (rtcClient)
+            await rtcClient.leave();
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
             // Notify the other user the call ended
             const payload = "CALL_END";
@@ -144,15 +171,10 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
         }
-        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack))
-            await rtcClient.unpublish(localCameraTrack);
-        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
-            await rtcClient.unpublish(localMicrophoneTrack);
-        if (rtcClient)
-            await rtcClient.leave();
     });
     // UI Actions
     const callUser = async () => {
+        //if(!checkUserStatus(rtmClient, getUserId(targetUserEmail, currentUserEmail), channelName: string) {};
         setCallState('CALLING');
         const payload = 'CALL_INVITE';
         const options = {
