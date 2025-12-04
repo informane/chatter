@@ -297,8 +297,11 @@ body {
                     max-width: 100% !important;
                     max-height: 100% !important;
                     position: relative !important;
+                    z-index: 9;
 
                     div {
+                        width: 100% !important;
+                        height: 100% !important;
                         max-width: 100% !important;
                         max-height: 100% !important;
                     }
@@ -426,6 +429,7 @@ body {
         .users-list {
 
             z-index: 99;
+
             .user {
                 margin: 15px 0;
                 font-weight: 600;
