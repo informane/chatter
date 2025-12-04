@@ -277,18 +277,13 @@ body {
                 position: relative;
 
                 .video-local {
-                    width: 100% !important;
-                    height: 100% !important;
-                    max-width: 100% !important;
-                    max-height: 100% !important;
+                    width: 30% !important;
+                    height: 30% !important;
+                    max-height: 30% !important;
+                    max-width: 30% !important;
                     position: absolute !important;
-                    z-index: 9;
+                    z-index: 10;
 
-                    video {
-                        max-height: 30% !important;
-                        max-width: 30% !important;
-
-                    }
                 }
 
                 .video-remote {
