@@ -208,7 +208,11 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     }
 
     var handleLeave = (async () => {
-
+        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack))
+            await rtcClient.unpublish(localCameraTrack);
+        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
+            await rtcClient.unpublish(localMicrophoneTrack);
+        if (rtcClient) await rtcClient.leave();
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
             // Notify the other user the call ended
 
@@ -221,16 +225,12 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
         }
-        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack))
-            await rtcClient.unpublish(localCameraTrack);
-        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
-            await rtcClient.unpublish(localMicrophoneTrack);
-        if (rtcClient) await rtcClient.leave();
+
     });
 
     // UI Actions
     const callUser = async () => {
-        
+
         //if(!checkUserStatus(rtmClient, getUserId(targetUserEmail, currentUserEmail), channelName: string) {};
         setCallState('CALLING');
         const payload = 'CALL_INVITE';
