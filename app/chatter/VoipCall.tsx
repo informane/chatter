@@ -126,6 +126,16 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             setIsCameraMuted(newMutedState);
         }
     };
+
+
+    var handleConnectionStateChange = (state: string, reason: string) => {
+        console.log('Connection State Changed:', state, 'Reason:', reason);
+        // This is key: If kicked out due to conflict, manually logout before trying again later
+        if (state === 'ABORTED' && reason === 'UID_CONFLICT') {
+            console.log("Conflict detected, forcing logout to clear session.");
+            rtmClient.current.logout();
+        }
+    };
     // Initialize RTM Client (Signaling) and RTC options(Voice Calling)
     useEffect(() => {
 
@@ -146,6 +156,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             await client.login({ token: data.rtmToken });
             rtmClient.current = client;
 
+            rtmClient.current.addEventListener('connection-state-change', handleConnectionStateChange);
+
             rtmClient.current.addEventListener('message', (event) => {
                 const signal = event.customType;
 
@@ -163,18 +175,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         }
 
         if (!isLoadingDevices && !isInited.current && !rtmClient.current) {
-            var handleConnectionStateChange = (state: string, reason: string) => {
-                console.log('Connection State Changed:', state, 'Reason:', reason);
-                // This is key: If kicked out due to conflict, manually logout before trying again later
-                if (state === 'ABORTED' && reason === 'UID_CONFLICT') {
-                    console.log("Conflict detected, forcing logout to clear session.");
-                    rtmClient.current.logout();
-                }
-            };
 
-            // Add the listener immediately
-            rtmClient.current.addEventListener('connection-state-change', handleConnectionStateChange);
-            
             setTimeout(async function () {
                 console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
                 isInited.current = true;
