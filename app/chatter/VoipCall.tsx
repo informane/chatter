@@ -18,7 +18,7 @@ import {
 } from 'agora-rtc-react';
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
-import AgoraRTC/*, { IAgoraRTCClient, ICameraVideoTrack, IMicrophoneAudioTrack }*/ from 'agora-rtc-sdk-ng';
+
 
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1: string, email2: string) => {
@@ -54,7 +54,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     const [remoteUserEmail] = useState(targetUserEmail);
     const rtmClient = useRef(null);
     const rtcClient = useRTCClient();
-
+    const isInited = useRef(false);
     const rtcToken = useRef(null);
     const uid = useRef(null);
 
@@ -118,10 +118,23 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             rtcToken.current = data.rtcToken;
             uid.current = data.numericUid;
 
-            console.log(remoteUsers, currentUserEmail, targetUserEmail, channel);
+            console.log(remoteUsers, currentUserEmail, targetUserEmail, channel, isInited.current);
             const client = new RTM(appId, userId);
             await client.login({ token: data.rtmToken });
             rtmClient.current = client;
+
+            var handleConnectionStateChange = (state: string, reason: string) => {
+                console.log('Connection State Changed:', state, 'Reason:', reason);
+                // This is key: If kicked out due to conflict, manually logout before trying again later
+                if (state === 'ABORTED' && reason === 'UID_CONFLICT') {
+                    console.log("Conflict detected, forcing logout to clear session.");
+                    rtmClient.current.logout();
+                }
+            };
+
+            // Add the listener immediately
+            rtmClient.current.addEventListener('connection-state-change', handleConnectionStateChange);
+
             rtmClient.current.addEventListener('message', (event) => {
                 const signal = event.customType;
 
@@ -137,20 +150,27 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                 }
             });
         }
-        console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack);
-        if (!isLoadingDevices) {
-            setTimeout(function () {
-                init()
-            }, 1000);
+
+        console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
+        if (!isLoadingDevices && !isInited.current && !rtmClient.current) {
+            setTimeout(async function () {
+                isInited.current = true;
+                await init()
+            }, 3000);
 
         }
+        //await new Promise(resolve => setTimeout(resolve, 3000));
         return () => {
+
             if (rtmClient.current) {
-                console.log('rtm logout');
+
+                //rtmClient.current.removeEventListener('connection-state-change', handleConnectionStateChange);
                 rtmClient.current.logout();
+
             }
 
             if (rtcClient) {
+
                 rtcClient.leave();
             }
         };

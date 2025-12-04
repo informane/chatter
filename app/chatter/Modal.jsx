@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 export default function Modal(props) {
-    var onClose = function () {
+    const onClose = function () {
         props.onClose();
     };
     if (props.isOpen) {

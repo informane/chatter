@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": "app",
     "outDir": "./app",
-    "target": "es5",
+    "target": "es2017",
      "downlevelIteration": true,
     "lib": [
       "dom",

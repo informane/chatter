@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-var UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     google_id: {
         type: Number,
         required: true,
