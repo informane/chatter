@@ -63,6 +63,29 @@ export async function addToContacts(user_id) {
     const res = await addedChat.json();
     return res;
 }
+export async function linkOneSignalUserToDb(userId) {
+    try {
+        const env = process.env.NODE_ENV;
+        const cookieName = env == 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token';
+        const cookieStore = await cookies();
+        let sessionTokenCookie = cookieStore.get(cookieName);
+        let sessionToken = sessionTokenCookie.value;
+        const addedMessage = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/onesignal/link_users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                "Cookie": `${cookieName}=${sessionToken};path=/;expires=Session`
+            },
+            cache: 'no-store',
+            body: JSON.stringify({ user_id: userId })
+        });
+        const res = await addedMessage.json();
+        return res;
+    }
+    catch (error) {
+        return { success: false, error: error.message };
+    }
+}
 export async function sendMessage(message, chat_id) {
     try {
         const env = process.env.NODE_ENV;

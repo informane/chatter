@@ -1,12 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import OneSignal from 'react-onesignal';
-
+import { linkOneSignalUserToDb } from '../lib/chatter';
 
 
 export default function SubscribePopup() {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [isPushSupported, setIsPushSupported] = useState(false);
+  const [userId, setUserId] = useState(null);
 
 
   useEffect(() => {
@@ -23,12 +23,12 @@ export default function SubscribePopup() {
       // Use the native browser check for initial support
       if ('Notification' in window && navigator.serviceWorker) {
         // Check if the user is already subscribed using the new V3 method
-        const userId = OneSignal.User.PushSubscription.id;
+        setUserId(OneSignal.User.PushSubscription.id);
         console.log('notification is presented')
         if (!userId) {
           // User is not subscribed, show the custom UI after a delay (or based on a user action)
           setTimeout(() => setShowPrompt(true), 3000);
-          console.log('no user ID')
+          console.log('user is not subbed')
         }
       } else {
         console.log("Push notifications not supported in this browser/environment.");
@@ -44,8 +44,21 @@ export default function SubscribePopup() {
 
     // *** The crucial step: Trigger the required native browser prompt ***
     try {
-      await OneSignal.Notifications.requestPermission();
+      const subResult = await OneSignal.Notifications.requestPermission();
       console.log("Native prompt shown and hopefully accepted!");
+
+      setUserId(OneSignal.User.PushSubscription.id);
+
+      if (userId) {
+        const linkResPromise = await linkOneSignalUserToDb(userId);
+        const linkRes = JSON.parse(linkResPromise);
+        if (linkRes.success) {
+          console.log('linked success')
+        } else {
+          console.log('error linking: ', linkRes.error)
+        }
+      }
+
       // You can add logic here to track if they accepted or denied
     } catch (error) {
       console.error("Error requesting notification permission:", error);
