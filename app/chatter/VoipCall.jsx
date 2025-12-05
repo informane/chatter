@@ -84,9 +84,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
     const [isCameraMuted, setIsCameraMuted] = useState(false);
     const toggleCameraMute = () => {
         if (localCameraTrack) {
-            localCameraTrack.setEnabled(true);
             const newMutedState = !isCameraMuted;
-            localCameraTrack.setMuted(newMutedState);
+            localCameraTrack.setEnabled(!newMutedState);
+            //localCameraTrack.setMuted(newMutedState);
             setIsCameraMuted(newMutedState);
         }
     };
@@ -221,13 +221,13 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
                         {<LocalAudioTrack track={localMicrophoneTrack} play={true}/>}
                     </div>
                     <div className="video-remote">
-                        {/* Render each remote video track in its own container */}
+                        {/* Render each remote video track */}
                         {videoTracks.map((track) => (<div key={track.getUserId()} className="video-card">
-                                <RemoteVideoTrack track={track} play={true} style={{ width: '100%', height: '100%' }}/>
-                                <p>User UID: {track.getUserId()}</p>
+                                <RemoteVideoTrack track={track} play={true}/>
+                                <p>Remote User UID: {track.getUserId()}</p>
                             </div>))}
 
-                        {/* Render each remote audio track (audio only, no UI needed) */}
+                        {/* Render each remote audio track */}
                         {audioTracks.map((track) => (<RemoteAudioTrack key={track.getUserId()} track={track} play={true}/>))}
                     </div>
                 </div>

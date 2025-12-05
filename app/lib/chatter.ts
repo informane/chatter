@@ -129,7 +129,7 @@ export async function getServerSessionEmail() {
             }
         }
     }
-    return '';
+    return null;
 }
 
 export async function getUserModelJson(email: string) {

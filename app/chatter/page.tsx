@@ -9,20 +9,34 @@ import './styles.scss';
 import AgoraMessasgeWrapper from './AgoraMessageDynamic';
 import VoipCallWrapper from './VoipCallDynamic';
 import { redirect } from 'next/navigation'
-import { getConversationUser } from "app/lib/chatter";
+import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
 export default function Chatter() {
 
   const { data: session, status } = useSession();
   const [chatId, setChatId] = useState(null);
   const [newMessageChatId, setNewMessageChatId] = useState(null);
   const [shown, setShown] = useState(false);
-  const [chatList, setChatList] = useState([]);
-
-
+  //const [chatList, setChatList] = useState([]);
+  const [targetUser, setTargetUser] = useState(null);
+  const [myEmail, setMyEmail] = useState(null);
 
   useEffect(() => {
 
-    async function initialFetch() {
+    async function initTargetUser() {
+      console.log(chatId, myEmail)
+      let target_user;
+      setMyEmail(await getServerSessionEmail());
+
+      if (myEmail && chatId) {
+        const targetUserPromise = await getConversationUser(chatId, myEmail);
+        target_user = await JSON.parse(targetUserPromise);
+        setTargetUser(target_user);
+      }
+    }
+
+    initTargetUser();
+
+    /*async function initialFetch() {
 
       const chatsPromise = await fetch('/api/chat/current');
       const chats = await chatsPromise.json();
@@ -32,9 +46,9 @@ export default function Chatter() {
       }
 
     }
-    if (!chatList.length) initialFetch();
+    if (!chatList.length) initialFetch();*/
 
-  }, [chatList])
+  }, [chatId, myEmail])
 
 
   function showNotification(chat_id) {
@@ -44,20 +58,21 @@ export default function Chatter() {
   if (status === 'loading') {
     return <p>Loading session...</p>;
   }
+  /*if (!targetUser.email) {
+    return <p>Loading session...</p>;
+  }*/
   if (!session) redirect("/api/auth/signin");
 
 
   //console.log(chatList)
-  const chatWindowsMap = chatList.map((value, index) => {
-    if (chatId == chatList[index]._id) {
-      return (
-        <div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
-          <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />
-          {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
-        </div>
-      )
-    }
-  })
+  /*const chatWindowsMap = chatList.map((value, index) => {
+     return (
+       <div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
+         <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />
+         {session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />}
+       </div>
+     )
+   })*/
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -69,7 +84,11 @@ export default function Chatter() {
           <aside>
             <ChatList chat_id={chatId} onChangeChatId={setChatId} newMessageChatId={newMessageChatId} shown={false} />
           </aside>
-          {chatWindowsMap}
+          {/*chatWindowsMap*/}
+          <div className='right-side'>
+            {chatId && targetUser && <VoipCallWrapper userEmail={session.user.email} targetUserEmail={targetUser.email} />}
+            {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
+          </div>
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}
         </section>
       </div>

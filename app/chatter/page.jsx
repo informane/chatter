@@ -6,25 +6,33 @@ import { Suspense, useEffect, useState } from 'react';
 import './styles.scss';
 import VoipCallWrapper from './VoipCallDynamic';
 import { redirect } from 'next/navigation';
+import { getConversationUser } from "app/lib/chatter";
 export default function Chatter() {
     const { data: session, status } = useSession();
     const [chatId, setChatId] = useState(null);
     const [newMessageChatId, setNewMessageChatId] = useState(null);
     const [shown, setShown] = useState(false);
-    const [chatList, setChatList] = useState([]);
+    //const [chatList, setChatList] = useState([]);
+    const [targetUser, setTargetUser] = useState(null);
     useEffect(() => {
-        async function initialFetch() {
-            const chatsPromise = await fetch('/api/chat/current');
-            const chats = await chatsPromise.json();
-            if (chats.data)
-                if (chats.data.length) {
-                    setChatList(chats.data);
-                    //console.log('page.tsx chatList:', chats.data);
-                }
+        async function getTargetUser(chat_id, my_email) {
+            const targetUserPromise = await getConversationUser(chat_id, my_email);
+            const target_user = await JSON.parse(targetUserPromise);
+            return target_user;
         }
-        if (!chatList.length)
-            initialFetch();
-    }, [chatList]);
+        setTargetUser(getTargetUser(chatId, session.user.email));
+        /*async function initialFetch() {
+    
+          const chatsPromise = await fetch('/api/chat/current');
+          const chats = await chatsPromise.json();
+          if (chats.data) if (chats.data.length) {
+            setChatList(chats.data);
+            //console.log('page.tsx chatList:', chats.data);
+          }
+    
+        }
+        if (!chatList.length) initialFetch();*/
+    }, [chatId, session.user.email]);
     function showNotification(chat_id) {
         setNewMessageChatId(chat_id);
     }
@@ -34,12 +42,14 @@ export default function Chatter() {
     if (!session)
         redirect("/api/auth/signin");
     //console.log(chatList)
-    const chatWindowsMap = chatList.map((value, index) => {
-        return (<div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
-        <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email}/>
-        {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
-      </div>);
-    });
+    /*const chatWindowsMap = chatList.map((value, index) => {
+       return (
+         <div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
+           <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />
+           {session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />}
+         </div>
+       )
+     })*/
     return (<Suspense fallback={<div>Loading...</div>}>
       <div className='main'>
         <header>
@@ -49,7 +59,11 @@ export default function Chatter() {
           <aside>
             <ChatList chat_id={chatId} onChangeChatId={setChatId} newMessageChatId={newMessageChatId} shown={false}/>
           </aside>
-          {chatWindowsMap}
+          {/*chatWindowsMap*/}
+          <div className='right-side'>
+            <VoipCallWrapper userEmail={session.user.email} targetUserEmail={targetUser.email}/>
+            {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
+          </div>
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}
         </section>
       </div>
