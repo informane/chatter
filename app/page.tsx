@@ -2,9 +2,23 @@ import Image from "next/image";
 import styles from "./page.module.css";
 import { redirect } from 'next/navigation';
 
-export default function Home() {
+import { useEffect, useState, useRef } from 'react';
+import OneSignal from 'react-onesignal';
 
-    redirect('/chatter');
+export default function Home() {
+  useEffect(() => {
+    // Ensure this code runs only on the client side
+    if (typeof window !== 'undefined') {
+      OneSignal.init({
+        appId: '731a811c-a368-4af1-b5d3-6674c10f47f6',
+        safari_web_id: "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7",
+        /*notifyButton: {
+          enable: true,
+        }*/
+      });
+    }
+  }, []);
+    //redirect('/chatter');
   return (
     <div className={styles.page}>
       <main className={styles.main}>
