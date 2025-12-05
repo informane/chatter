@@ -10,6 +10,8 @@ import AgoraMessasgeWrapper from './AgoraMessageDynamic';
 import VoipCallWrapper from './VoipCallDynamic';
 import { redirect } from 'next/navigation'
 import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
+import SubscribePopup from './OneSignalSubscribePopup';
+
 
 export default function Chatter() {
 
@@ -81,6 +83,7 @@ export default function Chatter() {
       <div className='main'>
         <header>
           <Header />
+          <SubscribePopup/>
         </header>
         <section className='chat-window'>
           <aside>
