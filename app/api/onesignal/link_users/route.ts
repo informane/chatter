@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
             const currentUser = await UserModel.findOne({ email: email });
             currentUser.one_signal_user_id = body.user_id;
             currentUser.save();
-            
+
         } else error = { status: true, message: 'empty email: ' + email };
 
         if (error.status)
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
             )
 
         return NextResponse.json(
-            { success: true, data: data },
+            { success: true },
             { status: 200 }
         )
 

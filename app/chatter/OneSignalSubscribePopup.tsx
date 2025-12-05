@@ -54,7 +54,7 @@ export default function SubscribePopup() {
         if (linkRes.success) {
           console.log('linked success')
         } else {
-          console.log('error linking: ', linkRes.error)
+          console.log('error linking: ', linkRes.error ?? "xz")
         }
       }
 
