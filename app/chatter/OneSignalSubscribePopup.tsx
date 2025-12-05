@@ -50,7 +50,7 @@ export default function SubscribePopup() {
       setUserId(OneSignal.User.PushSubscription.id);
 
       if (userId) {
-        const linkResPromise = await linkOneSignalUserToDb(userId);
+        const linkRes = await linkOneSignalUserToDb(userId);
         if (linkRes.success) {
           console.log('linked success')
         } else {

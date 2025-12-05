@@ -41,8 +41,7 @@ export default function SubscribePopup() {
             console.log("Native prompt shown and hopefully accepted!");
             setUserId(OneSignal.User.PushSubscription.id);
             if (userId) {
-                const linkResPromise = await linkOneSignalUserToDb(userId);
-                const linkRes = JSON.parse(linkResPromise);
+                const linkRes = await linkOneSignalUserToDb(userId);
                 if (linkRes.success) {
                     console.log('linked success');
                 }
