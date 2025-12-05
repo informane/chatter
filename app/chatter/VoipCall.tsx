@@ -213,6 +213,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
             await rtcClient.unpublish(localMicrophoneTrack);
         if (rtcClient) await rtcClient.leave();
+
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
             // Notify the other user the call ended
 
@@ -223,6 +224,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             };
             if (rtmClient.current) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
+                rtmClient.current.logout();
             }
         }
 
