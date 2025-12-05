@@ -6,7 +6,8 @@ import { Suspense, useEffect, useState } from 'react';
 import './styles.scss';
 import VoipCallWrapper from './VoipCallDynamic';
 import { redirect } from 'next/navigation';
-import { getConversationUser } from "app/lib/chatter";
+import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
+import OneSignal from 'react-onesignal';
 export default function Chatter() {
     const { data: session, status } = useSession();
     const [chatId, setChatId] = useState(null);
@@ -14,13 +15,32 @@ export default function Chatter() {
     const [shown, setShown] = useState(false);
     //const [chatList, setChatList] = useState([]);
     const [targetUser, setTargetUser] = useState(null);
+    const [myEmail, setMyEmail] = useState(null);
     useEffect(() => {
-        async function getTargetUser(chat_id, my_email) {
-            const targetUserPromise = await getConversationUser(chat_id, my_email);
-            const target_user = await JSON.parse(targetUserPromise);
-            return target_user;
+        // Ensure this code runs only on the client side
+        if (typeof window !== 'undefined') {
+            OneSignal.init({
+                appId: '731a811c-a368-4af1-b5d3-6674c10f47f6',
+                safari_web_id: "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7",
+                /*notifyButton: {
+                  enable: true,
+                },*/
+                allowLocalhostAsSecure: true,
+            });
         }
-        setTargetUser(getTargetUser(chatId, session.user.email));
+    }, []);
+    useEffect(() => {
+        async function initTargetUser() {
+            console.log(chatId, myEmail);
+            let target_user;
+            setMyEmail(await getServerSessionEmail());
+            if (myEmail && chatId) {
+                const targetUserPromise = await getConversationUser(chatId, myEmail);
+                target_user = await JSON.parse(targetUserPromise);
+                setTargetUser(target_user);
+            }
+        }
+        initTargetUser();
         /*async function initialFetch() {
     
           const chatsPromise = await fetch('/api/chat/current');
@@ -32,13 +52,16 @@ export default function Chatter() {
     
         }
         if (!chatList.length) initialFetch();*/
-    }, [chatId, session.user.email]);
+    }, [chatId, myEmail]);
     function showNotification(chat_id) {
         setNewMessageChatId(chat_id);
     }
     if (status === 'loading') {
         return <p>Loading session...</p>;
     }
+    /*if (!targetUser.email) {
+      return <p>Loading session...</p>;
+    }*/
     if (!session)
         redirect("/api/auth/signin");
     //console.log(chatList)
@@ -61,7 +84,7 @@ export default function Chatter() {
           </aside>
           {/*chatWindowsMap*/}
           <div className='right-side'>
-            <VoipCallWrapper userEmail={session.user.email} targetUserEmail={targetUser.email}/>
+            {chatId && targetUser && <VoipCallWrapper userEmail={session.user.email} targetUserEmail={targetUser.email}/>}
             {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
           </div>
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}

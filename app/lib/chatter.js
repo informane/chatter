@@ -110,7 +110,7 @@ export async function getServerSessionEmail() {
             }
         }
     }
-    return '';
+    return null;
 }
 export async function getUserModelJson(email) {
     await dbConnect();
