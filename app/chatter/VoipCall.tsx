@@ -289,18 +289,18 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
                         {<LocalAudioTrack track={localMicrophoneTrack} play={true} />}
                     </div>
                     <div className="video-remote">
-                        {/* Render each remote video track in its own container */}
+                        {/* Render each remote video track */}
                         {videoTracks.map((track) => (
                             <div key={track.getUserId()} className="video-card">
                                 <RemoteVideoTrack
                                     track={track}
                                     play={true}
                                 />
-                                <p>User UID: {track.getUserId()}</p>
+                                <p>Remote User UID: {track.getUserId()}</p>
                             </div>
                         ))}
 
-                        {/* Render each remote audio track (audio only, no UI needed) */}
+                        {/* Render each remote audio track */}
                         {audioTracks.map((track) => (
                             <RemoteAudioTrack
                                 key={track.getUserId()}

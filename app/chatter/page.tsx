@@ -26,7 +26,7 @@ export default function Chatter() {
 
       const chatsPromise = await fetch('/api/chat/current');
       const chats = await chatsPromise.json();
-      if(chats.data) if (chats.data.length) {
+      if (chats.data) if (chats.data.length) {
         setChatList(chats.data);
         //console.log('page.tsx chatList:', chats.data);
       }
@@ -49,12 +49,14 @@ export default function Chatter() {
 
   //console.log(chatList)
   const chatWindowsMap = chatList.map((value, index) => {
-    return (
-      <div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
-        <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />
-        {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
-      </div>
-    )
+    if (chatId == chatList[index]._id) {
+      return (
+        <div className={chatId == chatList[index]._id ? 'right-side' : 'right-side hidden'} key={chatList[index]._id}>
+          <VoipCallWrapper userEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />
+          {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
+        </div>
+      )
+    }
   })
 
   return (
