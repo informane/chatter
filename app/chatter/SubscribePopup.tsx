@@ -46,7 +46,7 @@ export default function SubscribePopup() {
       zIndex: 1000
     }}>
       <p>✨ **Subscribe to updates?**</p>
-      <p>We'd like to show notifications for new messages and calls.</p>
+      <p>We&#39;d like to show notifications for new messages and calls.</p>
       <button onClick={handleDeny} style={{ marginRight: '10px' }}>Maybe Later</button>
       <button onClick={handleAllow}>Allow Notifications</button>
     </div>
