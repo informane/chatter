@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
         if (!body) throw new Error('msg body is empty!');
 
         var error = { status: false, message: '' };
-        var data = [];
 
         const email = await getServerSessionEmail();
 
