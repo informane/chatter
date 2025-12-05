@@ -51,7 +51,6 @@ export default function SubscribePopup() {
 
       if (userId) {
         const linkResPromise = await linkOneSignalUserToDb(userId);
-        const linkRes = JSON.parse(linkResPromise);
         if (linkRes.success) {
           console.log('linked success')
         } else {
