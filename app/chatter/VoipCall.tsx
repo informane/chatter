@@ -121,8 +121,8 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
     const toggleCameraMute = () => {
         if (localCameraTrack) {
             const newMutedState = !isCameraMuted;
-            localCameraTrack.setMuted(newMutedState);
-            localCameraTrack.setEnabled(isCameraMuted);
+            localCameraTrack.setEnabled(!newMutedState);
+            //localCameraTrack.setMuted(newMutedState);
             setIsCameraMuted(newMutedState);
         }
     };
