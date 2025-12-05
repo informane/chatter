@@ -122,7 +122,7 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
         if (localCameraTrack) {
             const newMutedState = !isCameraMuted;
             localCameraTrack.setMuted(newMutedState);
-            localCameraTrack.setEnabled(!isCameraMuted);
+            //localCameraTrack.setEnabled(!isCameraMuted);
             setIsCameraMuted(newMutedState);
         }
     };
