@@ -4,6 +4,10 @@ const UserSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    one_signal_user_id: {
+        type: String,
+        required: false
+    },
     chats: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Chat',

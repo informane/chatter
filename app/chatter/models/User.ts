@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Document } from 'mongodb';
 export interface IUser {
   google_id: Number;
+  one_signal_user_id: string,
   chats: [mongoose.Schema.Types.ObjectId];
   name: string;
   email: string;
@@ -18,6 +19,10 @@ const UserSchema = new mongoose.Schema<IUserDocument>({
   google_id: {
     type: Number,
     required: true,
+  },
+  one_signal_user_id: {
+    type: String,
+     required: false
   },
   chats: [{
     type: mongoose.Schema.Types.ObjectId,

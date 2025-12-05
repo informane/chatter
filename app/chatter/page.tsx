@@ -10,7 +10,6 @@ import AgoraMessasgeWrapper from './AgoraMessageDynamic';
 import VoipCallWrapper from './VoipCallDynamic';
 import { redirect } from 'next/navigation'
 import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
-import OneSignal from 'react-onesignal';
 
 export default function Chatter() {
 
@@ -22,19 +21,6 @@ export default function Chatter() {
   const [targetUser, setTargetUser] = useState(null);
   const [myEmail, setMyEmail] = useState(null);
 
-  useEffect(() => {
-    // Ensure this code runs only on the client side
-    if (typeof window !== 'undefined') {
-      OneSignal.init({
-        appId: '731a811c-a368-4af1-b5d3-6674c10f47f6',
-        safari_web_id: "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7",
-        /*notifyButton: {
-          enable: true,
-        },*/
-        allowLocalhostAsSecure: true,
-      })
-    }
-  }, []);
 
   useEffect(() => {
 
