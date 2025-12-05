@@ -30,13 +30,9 @@ export default function Chatter() {
         safari_web_id: "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7",
         /*notifyButton: {
           enable: true,
-        }*/
+        },*/
         allowLocalhostAsSecure: true,
-      }).then(() => {
-        console.log("OneSignal initialized");
-        // Prompt for push permissions programmatically if needed
-        //OneSignal.showNativePrompt();
-      });;
+      })
     }
   }, []);
 
