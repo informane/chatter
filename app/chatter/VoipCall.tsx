@@ -224,7 +224,6 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             };
             if (rtmClient.current) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-                rtmClient.current.logout();
             }
         }
 
