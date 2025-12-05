@@ -2,7 +2,7 @@ import Image from "next/image";
 import styles from "./page.module.css";
 import { redirect } from 'next/navigation';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
 import OneSignal from 'react-onesignal';
 
 export default function Home() {
@@ -15,10 +15,15 @@ export default function Home() {
         /*notifyButton: {
           enable: true,
         }*/
-      });
+        allowLocalhostAsSecure: true,
+      }).then(() => {
+        console.log("OneSignal initialized");
+        // Prompt for push permissions programmatically if needed
+        //OneSignal.showNativePrompt();
+      });;
     }
   }, []);
-    //redirect('/chatter');
+  //redirect('/chatter');
   return (
     <div className={styles.page}>
       <main className={styles.main}>
