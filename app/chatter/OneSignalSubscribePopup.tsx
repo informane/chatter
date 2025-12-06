@@ -17,9 +17,9 @@ export default function SubscribePopup() {
         /*notifyButton: {
           enable: true,
         },*/
-        allowLocalhostAsSecure: true,
+        //allowLocalhostAsSecure: true,
       });
-
+      console.log('appId: ', process.env.ONESIGNAL_APP_ID);
       // Use the native browser check for initial support
       if ('Notification' in window && navigator.serviceWorker) {
         // Check if the user is already subscribed using the new V3 method
