@@ -7,15 +7,17 @@ import { linkOneSignalUserToDb } from '../lib/chatter';
 export default function SubscribePopup() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [userId, setUserId] = useState(null);
-
-
+  const appId = process.env.ONESIGNAL_APP_ID;
+  const safari_web_id = process.env.SAFARI_WEB_ID;
+  console.log('appId: ', appId);
+  console.log('safari web id: ', safari_web_id);
   useEffect(() => {
     console.log('appId: ', process.env.ONESIGNAL_APP_ID);
     const initializeOneSignal = async () => {
       console.log('appId: ', process.env.ONESIGNAL_APP_ID);
       await OneSignal.init({
-        appId: process.env.ONESIGNAL_APP_ID,
-        safari_web_id: process.env.SAFARI_WEB_ID,
+        appId: appId,
+        safari_web_id: safari_web_id,
         /*notifyButton: {
           enable: true,
         },*/
