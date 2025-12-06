@@ -109,6 +109,13 @@ export async function sendPush(userId: string, chatId: string, message: string) 
         await axios.post('https://api.onesignal.com/notifications?c=push', {
             app_id: oneSignalAppId,
             "target_channel": "push",
+            "web_buttons": [
+                {
+                    "id": "accept",
+                    "text": "Accept",
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id="+chatId
+                }
+            ],
             "include_aliases": {
                 "onesignal_id": [
                     userId
@@ -132,7 +139,7 @@ export async function sendPush(userId: string, chatId: string, message: string) 
 
     } catch (error) {
         console.error("Error sending notification:", error.response?.data || error.message);
-        return { success: false, message: error.response?.data};
+        return { success: false, message: error.response?.data };
     }
 }
 
