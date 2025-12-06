@@ -10,7 +10,9 @@ export default function SubscribePopup() {
 
 
   useEffect(() => {
+    console.log('appId: ', process.env.ONESIGNAL_APP_ID);
     const initializeOneSignal = async () => {
+      console.log('appId: ', process.env.ONESIGNAL_APP_ID);
       await OneSignal.init({
         appId: process.env.ONESIGNAL_APP_ID,
         safari_web_id: process.env.SAFARI_WEB_ID,
@@ -19,7 +21,7 @@ export default function SubscribePopup() {
         },*/
         //allowLocalhostAsSecure: true,
       });
-      console.log('appId: ', process.env.ONESIGNAL_APP_ID);
+
       // Use the native browser check for initial support
       if ('Notification' in window && navigator.serviceWorker) {
         // Check if the user is already subscribed using the new V3 method
