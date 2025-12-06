@@ -35,11 +35,11 @@ export default function SubscribePopup({ chatId }) {
                 tag: "call",
                 label: "Incoming call"
               }],
-              /*text: {
+              text: {
                 actionMessage: "<h3>Stay Updated with Chatter Messenger!</h3><p> We want to notify you immediately when you receive a new call.</p>",
-                acceptButton: "Enable Notifications",
+                acceptButton: "Enable",
                 //cancelButton: "Maybe Later"
-              }*/
+              }
             }]
           }
         },
