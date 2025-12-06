@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import OneSignal from 'react-onesignal';
 import { linkOneSignalUserToDb } from '../lib/chatter';
+import { assert } from 'console';
 
 
 export default function SubscribePopup({ chatId }) {
@@ -17,11 +18,30 @@ export default function SubscribePopup({ chatId }) {
       await OneSignal.init({
         appId: appId,
         safari_web_id: safari_web_id,
+        notificationClickHandlerMatch: 'exact',
         webhooks: {
-          cors: false, // Recommended: leave as false unless you need custom headers
+          cors: false,
           'notification.willDisplay': 'https://chatter-psi-six.vercel.app/api/onesignal/shown',
           'notification.clicked': 'https://chatter-psi-six.vercel.app/api/onesignal/accepted',
           'notification.dismissed': 'https://chatter-psi-six.vercel.app/api/onesignal/rejected'
+        },
+        promptOptions: {
+          slidedown: {
+            prompts: [{
+              type: 'push',
+              autoPrompt: true,
+              delay: { pageViews: 1, timeDelay: 3 },
+              categories: [{
+                tag: "call",
+                label: "Incoming call"
+              }],
+              /*text: {
+                actionMessage: "<h3>Stay Updated with Chatter Messenger!</h3><p> We want to notify you immediately when you receive a new call.</p>",
+                acceptButton: "Enable Notifications",
+                //cancelButton: "Maybe Later"
+              }*/
+            }]
+          }
         },
         /*notifyButton: {
           enable: true,
@@ -31,13 +51,18 @@ export default function SubscribePopup({ chatId }) {
         allowLocalhostAsSecureOrigin: true,
       });
 
+      // Attach the event listener *after* initialization
+      OneSignal.User.PushSubscription.addEventListener(
+        'change',
+        subscribeUser
+      );
+
       // Use the native browser check for initial support
-      if ('Notification' in window && navigator.serviceWorker) {
-        // Check if the user is already subscribed
+      /*if ('Notification' in window && navigator.serviceWorker) {
         const user_id = OneSignal.User.onesignalId;
         setUserId(user_id);
 
-        console.log('browser notification supported: ', OneSignal)
+        console.log('service worker present. OneSignal obj: ', OneSignal)
 
         if (!user_id) {
           // User is not subscribed, show the custom UI after a delay
@@ -48,18 +73,45 @@ export default function SubscribePopup({ chatId }) {
         }
       } else {
         console.log("Push notifications not supported in this browser/environment.");
-      }
+      }*/
     }
 
     initializeOneSignal();
+    // Cleanup the event listener when the component unmounts
+    return () => {
+      OneSignal.User.PushSubscription.removeEventListener(
+        'change',
+        subscribeUser
+      );
+    };
   }, []);
 
-  const handleSubscribeClick = async () => {
+  const subscribeUser = async (isSubscribed) => {
+
+    if (isSubscribed) {
+      console.log('user subscribed success')
+      const user_id = OneSignal.User.onesignalId;
+      setUserId(user_id);
+
+      if (user_id) {
+        const linkRes = await linkOneSignalUserToDb(user_id);
+        if (linkRes.success) {
+          console.log('signal user linked to db success')
+        } else {
+          console.log('error linking: ', linkRes.error ? "" : "no error msg")
+        }
+      }
+
+    } else {
+      console.log('user unsubed')
+    }
+
+
     // Hide custom UI once they click the button
-    setShowPrompt(false);
+    //setShowPrompt(false);
 
     // *** The crucial step: Trigger the required native browser prompt ***
-    try {
+    /*try {
       const subResult = await OneSignal.Notifications.requestPermission();
       if (!subResult) {
         console.log('Native prompt not shown')
@@ -79,17 +131,20 @@ export default function SubscribePopup({ chatId }) {
         }
       }
 
-      // You can add logic here to track if they accepted or denied
+      return () => {
+        OneSignal.User.PushSubscription.removeEventListener(
+          'change',
+          subscribeUser
+        );
+      };
+
     } catch (error) {
       console.error("Error requesting notification permission:", error);
-    }
+    }*/
   };
+return null;
 
-  if (!showPrompt) {
-    return null;
-  }
-
-  return (
+  /*return (
     <div style={{
       position: 'fixed',
       bottom: '20px',
@@ -108,5 +163,5 @@ export default function SubscribePopup({ chatId }) {
       <button onClick={handleSubscribeClick}>Enable Notifications</button>
       <button onClick={() => setShowPrompt(false)}>Maybe Later</button>
     </div>
-  );
+  );*/
 };

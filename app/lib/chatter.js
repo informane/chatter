@@ -102,7 +102,7 @@ export async function sendPush(userId, chatId, message) {
                 ]
             },
             contents: {
-                en: message || "You have a new message!",
+                en: message,
             },
             // Optionally add data payload to handle clicks in your Agora app
             data: {
