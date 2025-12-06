@@ -58,7 +58,6 @@ export default function SubscribePopup({ email, chatId }) {
         'change',
         subscribeUser
       );
-      OneSignal.login(email);
 
     }
 
@@ -72,8 +71,8 @@ export default function SubscribePopup({ email, chatId }) {
     };
   }, []);
 
-  const acceptCallMessage = function () {}
-  
+  const acceptCallMessage = function () { }
+
   const subscribeUser = async (isSubscribed) => {
 
     if (isSubscribed) {
@@ -84,6 +83,7 @@ export default function SubscribePopup({ email, chatId }) {
       if (user_id) {
         const linkRes = await linkOneSignalUserToDb(user_id);
         if (linkRes.success) {
+          OneSignal.login(email);
           console.log('signal user linked to db success')
         } else {
           console.log('error linking: ', linkRes.error ? "" : "no error msg")
