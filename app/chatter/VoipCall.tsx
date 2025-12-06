@@ -18,7 +18,7 @@ import {
 } from 'agora-rtc-react';
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
-import { sendPush } from 'app/lib/chatter';
+import { sendPushCall, sendPushHangUp } from 'app/lib/chatter';
 import { ChatTokenBuilder } from 'agora-token';
 
 
@@ -218,15 +218,16 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
 
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
             // Notify the other user the call ended
-
-            const payload = "CALL_END";
+            const message = currentUserEmail + ' hanged up!';
+            const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
+            /*const payload = "CALL_END";
             const options = {
                 customType: "CALL_END",
                 channelType: "USER",
             };
             if (rtmClient.current) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-            }
+            }*/
         }
 
     });
@@ -237,7 +238,7 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
         //if(!checkUserStatus(rtmClient, getUserId(targetUserEmail, currentUserEmail), channelName: string) {};
         setCallState('CALLING');
         const message = currentUserEmail + ' is calling!';
-        const PushPromise = await sendPush(oneSignalUserId, chatId, message);
+        const PushPromise = await sendPushCall(oneSignalUserId, chatId, message);
         console.log(PushPromise);
         /*const payload = 'CALL_INVITE';
         const options = {

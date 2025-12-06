@@ -100,7 +100,7 @@ export async function linkOneSignalUserToDb(userId: string) {
     }
 }
 
-export async function sendPush(userId: string, chatId: string, message: string) {
+export async function sendPushCall(userId: string, chatId: string, message: string) {
     try {
         await dbConnect();
         var oneSignalAppId = process.env.ONESIGNAL_APP_ID;
@@ -113,8 +113,13 @@ export async function sendPush(userId: string, chatId: string, message: string) 
                 {
                     "id": "accept",
                     "text": "Accept",
-                    "url": "https://chatter-psi-six.vercel.app/?chat_id="+chatId
-                }
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
+                },
+                /*{
+                    "id": "cancel",
+                    "text": "Cancel",
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
+                }*/
             ],
             "include_aliases": {
                 "onesignal_id": [
@@ -124,11 +129,46 @@ export async function sendPush(userId: string, chatId: string, message: string) 
             contents: {
                 en: message,
             },
-            // Optionally add data payload to handle clicks in your Agora app
             data: {
                 chatId: chatId
             },
-            url: "https://chatter-psi-six.vercel.app/?_osp=do_not_open"
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
+        }, {
+            headers: {
+                'Authorization': `Key ${oneSignalApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return { success: true, message: 'Notification sent' };
+
+    } catch (error) {
+        console.error("Error sending notification:", error.response?.data || error.message);
+        return { success: false, message: error.response?.data };
+    }
+}
+
+export async function sendPushHangUp(userId: string, chatId: string, message: string) {
+    try {
+        await dbConnect();
+        var oneSignalAppId = process.env.ONESIGNAL_APP_ID;
+        var oneSignalApiKey = process.env.ONESIGNAL_REST_API_KEY;
+
+        await axios.post('https://api.onesignal.com/notifications?c=push', {
+            app_id: oneSignalAppId,
+            "target_channel": "push",
+            "include_aliases": {
+                "onesignal_id": [
+                    userId
+                ]
+            },
+            contents: {
+                en: message,
+            },
+            data: {
+                chatId: chatId
+            },
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
         }, {
             headers: {
                 'Authorization': `Key ${oneSignalApiKey}`,
