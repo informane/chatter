@@ -3,6 +3,7 @@ import Message from "../../../../chatter/models/Message";
 import { NextResponse } from "next/server";
 import { getUserModelById } from "app/lib/chatter";
 export const dynamic = 'force-dynamic';
+//not used
 export async function GET(request) {
     // Connect to MongoDB
     await dbConnect();

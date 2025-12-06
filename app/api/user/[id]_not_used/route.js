@@ -1,6 +1,7 @@
 import dbConnect from '../../../lib/mongodb';
 import User from '../../../chatter/models/User';
 import { NextResponse } from 'next/server';
+//not used
 export default async function GET(request) {
     try {
         await dbConnect();

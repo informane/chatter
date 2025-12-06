@@ -26,7 +26,7 @@ export default function UserSearch({onUpdateChatList}) {
 
                 console.log(Users.data);
                 setUsers(Users.data);
-            } else {
+            } else {    
                 setUsers([]);
             }
             setSuccess({message: null});

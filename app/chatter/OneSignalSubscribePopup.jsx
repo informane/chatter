@@ -5,23 +5,29 @@ import { linkOneSignalUserToDb } from '../lib/chatter';
 export default function SubscribePopup() {
     const [showPrompt, setShowPrompt] = useState(false);
     const [userId, setUserId] = useState(null);
+    const appId = process.env.ONESIGNAL_APP_ID;
+    const safari_web_id = process.env.SAFARI_WEB_ID;
+    console.log('appId: ', appId);
+    console.log('safari web id: ', safari_web_id);
     useEffect(() => {
+        console.log('appId: ', process.env.ONESIGNAL_APP_ID);
         const initializeOneSignal = async () => {
+            console.log('appId: ', process.env.ONESIGNAL_APP_ID);
             await OneSignal.init({
-                appId: '731a811c-a368-4af1-b5d3-6674c10f47f6',
-                safari_web_id: "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7",
+                appId: appId,
+                safari_web_id: safari_web_id,
                 /*notifyButton: {
                   enable: true,
                 },*/
-                allowLocalhostAsSecure: true,
+                //allowLocalhostAsSecure: true,
             });
             // Use the native browser check for initial support
             if ('Notification' in window && navigator.serviceWorker) {
                 // Check if the user is already subscribed using the new V3 method
                 setUserId(OneSignal.User.PushSubscription.id);
-                console.log('notification is presented');
+                console.log('notification is presented: ', OneSignal.User);
                 if (!userId) {
-                    // User is not subscribed, show the custom UI after a delay (or based on a user action)
+                    // User is not subscribed, show the custom UI after a delay
                     setTimeout(() => setShowPrompt(true), 3000);
                     console.log('user is not subbed');
                 }
@@ -33,12 +39,17 @@ export default function SubscribePopup() {
         initializeOneSignal();
     }, []);
     const handleSubscribeClick = async () => {
-        // Hide your custom UI once they click the button
+        // Hide custom UI once they click the button
         setShowPrompt(false);
         // *** The crucial step: Trigger the required native browser prompt ***
         try {
             const subResult = await OneSignal.Notifications.requestPermission();
-            console.log("Native prompt shown and hopefully accepted!");
+            if (!subResult) {
+                console.log('Native prompt not shown');
+            }
+            else {
+                console.log("Native prompt shown and hopefully accepted!");
+            }
             setUserId(OneSignal.User.PushSubscription.id);
             if (userId) {
                 const linkRes = await linkOneSignalUserToDb(userId);
@@ -46,7 +57,7 @@ export default function SubscribePopup() {
                     console.log('linked success');
                 }
                 else {
-                    console.log('error linking: ', linkRes.error);
+                    console.log('error linking: ', linkRes.error ? "" : "xz");
                 }
             }
             // You can add logic here to track if they accepted or denied
@@ -71,7 +82,7 @@ export default function SubscribePopup() {
             transform: showPrompt ? 'translateY(0)' : 'translateY(100px)',
             zIndex: 1000
         }}>
-      <h3>Stay Updated with Agora Messenger!</h3>
+      <h3>Stay Updated with Chatter Messenger!</h3>
       <p>We want to notify you immediately when you receive a new message.</p>
       <button onClick={handleSubscribeClick}>Enable Message Notifications</button>
       <button onClick={() => setShowPrompt(false)}>Maybe Later</button>

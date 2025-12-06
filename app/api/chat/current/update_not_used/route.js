@@ -2,6 +2,7 @@ import dbConnect from "../../../../lib/mongodb";
 import Chat from "../../../../chatter/models/Chat";
 import { NextResponse } from "next/server";
 import { getUserModelById } from "app/lib/chatter";
+//not used
 export const dynamic = 'force-dynamic';
 export async function GET(request) {
     // Connect to MongoDB

@@ -6,6 +6,7 @@ import Message from '../chatter/models/Message';
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { cookies } from 'next/headers';
+import axios from 'axios';
 /*
 export async function addChatAction(queryData: FormData) {
 
@@ -70,7 +71,7 @@ export async function linkOneSignalUserToDb(userId) {
         const cookieStore = await cookies();
         let sessionTokenCookie = cookieStore.get(cookieName);
         let sessionToken = sessionTokenCookie.value;
-        const addedMessage = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/onesignal/link_users', {
+        const linkedRes = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/onesignal/link_user', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -79,11 +80,45 @@ export async function linkOneSignalUserToDb(userId) {
             cache: 'no-store',
             body: JSON.stringify({ user_id: userId })
         });
-        const res = await addedMessage.json();
+        const res = await linkedRes.json();
         return res;
     }
     catch (error) {
         return { success: false, error: error.message };
+    }
+}
+export async function sendPush(userId, chatId, message) {
+    var _a;
+    try {
+        await dbConnect();
+        const oneSignalAppId = process.env.ONESIGNAL_APP_ID;
+        const oneSignalApiKey = process.env.ONESIGNAL_REST_API_KEY;
+        await axios.post('https://api.onesignal.com/notifications?c=push', {
+            app_id: oneSignalAppId,
+            "include_aliases": {
+                "onesignal_id": [
+                    userId
+                ]
+            },
+            contents: {
+                en: message || "You have a new message!",
+            },
+            // Optionally add data payload to handle clicks in your Agora app
+            data: {
+                // e.g., link to the specific chat
+                chatId: chatId
+            }
+        }, {
+            headers: {
+                'Authorization': `Key ${oneSignalApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return { success: true, message: 'Notification sent' };
+    }
+    catch (error) {
+        console.error("Error sending notification:", ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
+        return { success: false, message: 'Failed to send notification' };
     }
 }
 export async function sendMessage(message, chat_id) {

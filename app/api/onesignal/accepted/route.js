@@ -1,27 +1,38 @@
 import dbConnect from '../../../lib/mongodb';
 import { NextResponse } from 'next/server';
-import { getServerSessionEmail } from '../../../lib/chatter';
-import User from '../../../chatter/models/User';
-export async function GET(request) {
+import axios from 'axios';
+export async function POST(request) {
     try {
         await dbConnect();
-        var body = await request.json();
+        const body = await request.json();
+        ;
+        const oneSignalAppId = process.env.ONESIGNAL_APP_ID;
+        const oneSignalApiKey = process.env.ONESIGNAL_REST_API_KEY;
         if (!body)
-            throw new Error('msg body is empty!');
-        var error = { status: false, message: '' };
-        var data = [];
-        const email = await getServerSessionEmail();
-        if (email) {
-            const UserModel = User;
-            const currentUser = await UserModel.findOne({ email: email });
-            currentUser.one_signal_user_id = body.user_id;
-            currentUser.save();
-        }
-        else
-            error = { status: true, message: 'empty email: ' + email };
-        if (error.status)
-            return NextResponse.json({ success: false, error: error.message }, { status: 200 });
-        return NextResponse.json({ success: true, data: data }, { status: 200 });
+            throw new Error('Request body is empty!');
+        const { userId, messageContent, chatId } = body;
+        await axios.post('https://api.onesignal.com/notifications?c=push', {
+            app_id: oneSignalAppId,
+            "include_aliases": {
+                "onesignal_id": [
+                    userId
+                ]
+            },
+            contents: {
+                en: messageContent || "You have a new message!",
+            },
+            // Optionally add data payload to handle clicks in your Agora app
+            data: {
+                // e.g., link to the specific chat
+                chatId: chatId
+            }
+        }, {
+            headers: {
+                'Authorization': `Key ${oneSignalApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return NextResponse.json({ success: true }, { status: 200 });
     }
     catch (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });

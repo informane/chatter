@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRTCClient, LocalVideoTrack, LocalAudioTrack, useLocalCameraTrack, useLocalMicrophoneTrack, useRemoteUsers, useRemoteAudioTracks, useRemoteVideoTracks, RemoteAudioTrack, RemoteVideoTrack } from 'agora-rtc-react';
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
+import { sendPush } from 'app/lib/chatter';
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1, email2) => {
     email1 = email1.replaceAll('.', '');
@@ -47,7 +48,7 @@ function isTrackPublished(agoraClient, trackToCheck) {
     return false;
   }
 };*/
-export default function VoipCall({ currentUserEmail, targetUserEmail }) {
+export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, targetUserEmail }) {
     const { RTM } = AgoraRTM;
     const [callState, setCallState] = useState('IDLE');
     const [remoteUserEmail] = useState(targetUserEmail);
@@ -182,7 +183,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }) {
             channelType: "USER",
         };
         if (rtmClient.current) {
-            await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
+            const message = targetUserEmail + ' is calling!';
+            const PushPromise = await sendPush(oneSignalUserId, chatId, message);
+            //qawait rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
         }
     };
     const answerCall = async () => {
