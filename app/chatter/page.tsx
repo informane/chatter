@@ -12,12 +12,17 @@ import { redirect, useSearchParams } from 'next/navigation'
 import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
 import SubscribePopup from './OneSignalSubscribePopup';
 
-
-export default function Chatter() {
+import { use } from 'react'
+ 
+export default function Chatter({
+  searchParams,
+}: {
+  searchParams: Promise<{ chat_id?: string }>
+}) {
+  const params = use(searchParams)
 
   const { data: session, status } = useSession();
-  const searchParams = useSearchParams();
-  const [chatId, setChatId] = useState(searchParams.get('chat_id') ?? null);
+  const [chatId, setChatId] = useState(params.chat_id ?? null);
   const [newMessageChatId, setNewMessageChatId] = useState(null);
   const [shown, setShown] = useState(false);
   //const [chatList, setChatList] = useState([]);
@@ -85,7 +90,7 @@ export default function Chatter() {
       <div className='main'>
         <header>
           <Header />
-          <SubscribePopup chatId={chatId}/>
+          <SubscribePopup chatId={chatId} />
         </header>
         <section className='chat-window'>
           <aside>

@@ -5,14 +5,15 @@ import { useSession } from "next-auth/react";
 import { Suspense, useEffect, useState } from 'react';
 import './styles.scss';
 import VoipCallWrapper from './VoipCallDynamic';
-import { redirect, useSearchParams } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
 import SubscribePopup from './OneSignalSubscribePopup';
-export default function Chatter() {
+import { use } from 'react';
+export default function Chatter({ searchParams, }) {
     var _a;
+    const params = use(searchParams);
     const { data: session, status } = useSession();
-    const searchParams = useSearchParams();
-    const [chatId, setChatId] = useState((_a = searchParams.get('chat_id')) !== null && _a !== void 0 ? _a : null);
+    const [chatId, setChatId] = useState((_a = params.chat_id) !== null && _a !== void 0 ? _a : null);
     const [newMessageChatId, setNewMessageChatId] = useState(null);
     const [shown, setShown] = useState(false);
     //const [chatList, setChatList] = useState([]);

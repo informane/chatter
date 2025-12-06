@@ -1,10 +1,19 @@
 import Image from "next/image";
 import styles from "./page.module.css";
 import { redirect } from 'next/navigation';
+import Chatter from './chatter/page';
+import { Suspense } from 'react'
 
-export default function Home() {
-
-  redirect('/chatter');
+export default function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ chat_id?: string }>
+}) {
+  return (
+    <Suspense fallback={<>...</>}>
+      <Chatter searchParams={searchParams} />
+    </Suspense>
+  )
   return (
     <div className={styles.page}>
       <main className={styles.main}>

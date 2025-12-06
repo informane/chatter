@@ -19,9 +19,9 @@ export default function SubscribePopup({ chatId }) {
         safari_web_id: safari_web_id,
         webhooks: {
           cors: false, // Recommended: leave as false unless you need custom headers
-          'notification.willDisplay': 'http://localhost:3000/api/onesignal/shown',
-          'notification.clicked': 'https://localhost:3000/api/onesignal/accepted',
-          'notification.dismissed': 'https://localhost:3000/api/onesignal/rejected'
+          'notification.willDisplay': 'https://chatter-psi-six.vercel.app/api/onesignal/shown',
+          'notification.clicked': 'https://chatter-psi-six.vercel.app/api/onesignal/accepted',
+          'notification.dismissed': 'https://chatter-psi-six.vercel.app/api/onesignal/rejected'
         },
         /*notifyButton: {
           enable: true,
