@@ -12,7 +12,7 @@ export default function SubscribePopup() {
 
   console.log('appId: ', appId);
   console.log('safari web id: ', safari_web_id);
-  
+
   useEffect(() => {
     const initializeOneSignal = async () => {
       await OneSignal.init({
@@ -26,10 +26,13 @@ export default function SubscribePopup() {
 
       // Use the native browser check for initial support
       if ('Notification' in window && navigator.serviceWorker) {
-        // Check if the user is already subscribed using the new V3 method
-        setUserId(OneSignal.User.PushSubscription.id);
+        // Check if the user is already subscribed
+        const user_id = OneSignal.User.PushSubscription.id;
+        setUserId(user_id);
+
         console.log('notification is presented: ', OneSignal.User)
-        if (!userId) {
+
+        if (!user_id) {
           // User is not subscribed, show the custom UI after a delay
           setTimeout(() => setShowPrompt(true), 3000);
           console.log('user is not subbed')
@@ -55,10 +58,11 @@ export default function SubscribePopup() {
         console.log("Native prompt shown and hopefully accepted!");
       }
 
-      setUserId(OneSignal.User.PushSubscription.id);
+      const user_id = OneSignal.User.PushSubscription.id;
+      setUserId(user_id);
 
-      if (userId) {
-        const linkRes = await linkOneSignalUserToDb(userId);
+      if (user_id) {
+        const linkRes = await linkOneSignalUserToDb(user_id);
         if (linkRes.success) {
           console.log('linked success')
         } else {
