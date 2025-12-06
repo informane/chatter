@@ -24,7 +24,7 @@ export default function SubscribePopup() {
       if ('Notification' in window && navigator.serviceWorker) {
         // Check if the user is already subscribed using the new V3 method
         setUserId(OneSignal.User.PushSubscription.id);
-        console.log('notification is presented')
+        console.log('notification is presented', JSON.stringify(OneSignal.User))
         if (!userId) {
           // User is not subscribed, show the custom UI after a delay (or based on a user action)
           setTimeout(() => setShowPrompt(true), 3000);
