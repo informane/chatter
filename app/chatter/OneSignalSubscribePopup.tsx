@@ -21,7 +21,7 @@ export default function SubscribePopup() {
         /*notifyButton: {
           enable: true,
         },*/
-        //allowLocalhostAsSecure: true,
+        allowLocalhostAsSecure: true,
       });
 
       // Use the native browser check for initial support
@@ -30,7 +30,7 @@ export default function SubscribePopup() {
         const user_id = OneSignal.User.PushSubscription.id;
         setUserId(user_id);
 
-        console.log('notification is presented: ', OneSignal.User)
+        console.log('notification is presented: ', OneSignal)
 
         if (!user_id) {
           // User is not subscribed, show the custom UI after a delay
@@ -64,9 +64,9 @@ export default function SubscribePopup() {
       if (user_id) {
         const linkRes = await linkOneSignalUserToDb(user_id);
         if (linkRes.success) {
-          console.log('linked success')
+          console.log('signal user linked to db success')
         } else {
-          console.log('error linking: ', linkRes.error ? "" : "xz")
+          console.log('error linking: ', linkRes.error ? "" : "no error msg")
         }
       }
 
@@ -95,8 +95,8 @@ export default function SubscribePopup() {
       zIndex: 1000
     }}>
       <h3>Stay Updated with Chatter Messenger!</h3>
-      <p>We want to notify you immediately when you receive a new message.</p>
-      <button onClick={handleSubscribeClick}>Enable Message Notifications</button>
+      <p>We want to notify you immediately when you receive a new call.</p>
+      <button onClick={handleSubscribeClick}>Enable Notifications</button>
       <button onClick={() => setShowPrompt(false)}>Maybe Later</button>
     </div>
   );
