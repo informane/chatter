@@ -84,7 +84,7 @@ export async function linkOneSignalUserToDb(userId: string) {
         const cookieStore = await cookies()
         let sessionTokenCookie = cookieStore.get(cookieName)
         let sessionToken = sessionTokenCookie.value;
-        const linkedRes = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/onesignal/link_users', {
+        const linkedRes = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/onesignal/link_user', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
