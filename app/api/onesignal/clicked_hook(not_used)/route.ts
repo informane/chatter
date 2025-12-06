@@ -5,12 +5,12 @@ import { Model } from "mongoose";
 import User, { IUser, IUserDocument } from '../../../chatter/models/User';
 
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
 
     try {
         await dbConnect();
         var body = await request.json();
-        if (!body) throw new Error('msg body is empty!');
+        if (!body) throw new Error('Request body is empty!');
 
         var error = { status: false, message: '' };
 
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         if (email) {
             const UserModel: Model<IUserDocument> = User;
             const currentUser = await UserModel.findOne({ email: email });
-            currentUser.one_signal_user_id = body.user_id;
+            currentUser.one_signal_user_id = body.additionalData.userId;
             currentUser.save();
 
         } else error = { status: true, message: 'empty email: ' + email };

@@ -24,7 +24,7 @@ export default function SubscribePopup() {
       if ('Notification' in window && navigator.serviceWorker) {
         // Check if the user is already subscribed using the new V3 method
         setUserId(OneSignal.User.PushSubscription.id);
-        console.log('notification is presented', JSON.stringify(OneSignal.User))
+        console.log('notification is presented: ', OneSignal.User)
         if (!userId) {
           // User is not subscribed, show the custom UI after a delay (or based on a user action)
           setTimeout(() => setShowPrompt(true), 3000);
@@ -82,7 +82,7 @@ export default function SubscribePopup() {
       transform: showPrompt ? 'translateY(0)' : 'translateY(100px)',
       zIndex: 1000
     }}>
-      <h3>Stay Updated with Agora Messenger!</h3>
+      <h3>Stay Updated with Chatter Messenger!</h3>
       <p>We want to notify you immediately when you receive a new message.</p>
       <button onClick={handleSubscribeClick}>Enable Message Notifications</button>
       <button onClick={() => setShowPrompt(false)}>Maybe Later</button>
