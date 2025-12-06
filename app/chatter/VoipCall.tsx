@@ -241,11 +241,12 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
             customType: "CALL_INVITE",
             channelType: "USER",
         };
-        if (rtmClient.current) {
-            const message = targetUserEmail + ' is calling!';
-            const PushPromise = await sendPush(oneSignalUserId, chatId, message);
-            //qawait rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-        }
+        const message = targetUserEmail + ' is calling!';
+        const PushPromise = await sendPush(oneSignalUserId, chatId, message);
+        
+        /*if (rtmClient.current) {
+            await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
+        }*/
     };
 
     const answerCall = async () => {
