@@ -26,7 +26,7 @@ export default function SubscribePopup() {
         setUserId(OneSignal.User.PushSubscription.id);
         console.log('notification is presented: ', OneSignal.User)
         if (!userId) {
-          // User is not subscribed, show the custom UI after a delay (or based on a user action)
+          // User is not subscribed, show the custom UI after a delay
           setTimeout(() => setShowPrompt(true), 3000);
           console.log('user is not subbed')
         }
@@ -39,14 +39,18 @@ export default function SubscribePopup() {
   }, []);
 
   const handleSubscribeClick = async () => {
-    // Hide your custom UI once they click the button
+    // Hide custom UI once they click the button
     setShowPrompt(false);
 
     // *** The crucial step: Trigger the required native browser prompt ***
     try {
       const subResult = await OneSignal.Notifications.requestPermission();
-      console.log("Native prompt shown and hopefully accepted!");
-
+      if (!subResult) {
+        console.log('Native prompt not shown')
+      } else {
+        console.log("Native prompt shown and hopefully accepted!");
+      }
+      
       setUserId(OneSignal.User.PushSubscription.id);
 
       if (userId) {
