@@ -12,8 +12,8 @@ export default function SubscribePopup() {
   useEffect(() => {
     const initializeOneSignal = async () => {
       await OneSignal.init({
-        appId: '731a811c-a368-4af1-b5d3-6674c10f47f6',
-        safari_web_id: "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7",
+        appId: process.env.ONESIGNAL_APP_ID,
+        safari_web_id: process.env.SAFARI_WEB_ID,
         /*notifyButton: {
           enable: true,
         },*/
@@ -50,7 +50,7 @@ export default function SubscribePopup() {
       } else {
         console.log("Native prompt shown and hopefully accepted!");
       }
-      
+
       setUserId(OneSignal.User.PushSubscription.id);
 
       if (userId) {

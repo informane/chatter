@@ -18,6 +18,8 @@ import {
 } from 'agora-rtc-react';
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
+import { sendPush } from 'app/lib/chatter';
+import { ChatTokenBuilder } from 'agora-token';
 
 
 // Helper function to generate a consistent channel name for a 1:1 call
@@ -70,7 +72,7 @@ function isTrackPublished(agoraClient, trackToCheck) {
   }
 };*/
 
-export default function VoipCall({ currentUserEmail, targetUserEmail }: { currentUserEmail: string, targetUserEmail: string }) {
+export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, targetUserEmail }: { chatId: string, oneSignalUserId: string, currentUserEmail: string, targetUserEmail: string }) {
 
     const { RTM } = AgoraRTM;
     const [callState, setCallState] = useState<'IDLE' | 'CALLING' | 'RECEIVING_CALL' | 'IN_CALL'>('IDLE');
@@ -240,8 +242,9 @@ export default function VoipCall({ currentUserEmail, targetUserEmail }: { curren
             channelType: "USER",
         };
         if (rtmClient.current) {
-
-            await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
+            const message = targetUserEmail + ' is calling!';
+            const PushPromise = await sendPush(oneSignalUserId, chatId, message);
+            //qawait rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
         }
     };
 

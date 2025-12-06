@@ -8,6 +8,7 @@ import { Document, ObjectId } from 'mongoose';
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { cookies } from 'next/headers'
+import axios from 'axios';
 import strict from "assert/strict";
 /*
 export async function addChatAction(queryData: FormData) {
@@ -96,6 +97,42 @@ export async function linkOneSignalUserToDb(userId: string) {
         return res;
     } catch (error) {
         return { success: false, error: error.message }
+    }
+}
+
+export async function sendPush(userId: string, chatId: string, message: string) {
+    try {
+        await dbConnect();
+        const oneSignalAppId = process.env.ONESIGNAL_APP_ID;
+        const oneSignalApiKey = process.env.ONESIGNAL_REST_API_KEY;
+
+        await axios.post('https://api.onesignal.com/notifications?c=push', {
+            app_id: oneSignalAppId,
+            "include_aliases": {
+                "onesignal_id": [
+                    userId
+                ]
+            },
+            contents: {
+                en: message || "You have a new message!",
+            },
+            // Optionally add data payload to handle clicks in your Agora app
+            data: {
+                // e.g., link to the specific chat
+                chatId: chatId
+            }
+        }, {
+            headers: {
+                'Authorization': `Key ${oneSignalApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        return { success: true, message: 'Notification sent' };
+
+    } catch (error) {
+        console.error("Error sending notification:", error.response?.data || error.message);
+        return { success: false, message: 'Failed to send notification' };
     }
 }
 

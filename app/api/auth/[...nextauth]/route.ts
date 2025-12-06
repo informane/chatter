@@ -42,6 +42,7 @@ export const authOptions = {
             },
             body: JSON.stringify({
               google_id: user.id,
+              one_signal_user_id: '',
               name: user.name,
               email: user.email,
               avatar: user.image,
