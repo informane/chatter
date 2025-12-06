@@ -90,7 +90,7 @@ export default function Chatter({
       <div className='main'>
         <header>
           <Header />
-          <SubscribePopup chatId={chatId} />
+          <SubscribePopup chatId={chatId} email={myEmail} />
         </header>
         <section className='chat-window'>
           <aside>

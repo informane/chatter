@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
             const currentUser = await UserModel.findOne({ email: email });
             //update oneSignal userId
             currentUser.one_signal_user_id = body.user_id;
-            currentUser.save();
+            await currentUser.save();
 
         } else error = { status: true, message: 'empty email: ' + email };
 
