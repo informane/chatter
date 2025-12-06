@@ -6,7 +6,7 @@ import { redirect } from 'next/dist/server/api-utils';
 
 
 export default function SubscribePopup({ email, chatId }) {
-  const [showPrompt, setShowPrompt] = useState(false);
+
   const [userId, setUserId] = useState(null);
   const appId = "731a811c-a368-4af1-b5d3-6674c10f47f6";
   const safari_web_id = "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7";
@@ -37,7 +37,7 @@ export default function SubscribePopup({ email, chatId }) {
                 label: "Incoming call"
               }],
               text: {
-                actionMessage: "Stay Updated with Chatter Messenger! Click Accept to subscribe",
+                actionMessage: "Stay Updated with Chatter Messenger! Click Accept to subscribe!",
                 acceptButton: "Accept",
                 //cancelButton: "Maybe Later"
               }
@@ -52,6 +52,7 @@ export default function SubscribePopup({ email, chatId }) {
         //allowLocalhostAsSecureOrigin: true,
       });
 
+      //OneSignal.Notifications.addEventListener("click", acceptCallMessage);
 
       OneSignal.User.PushSubscription.addEventListener(
         'change',
@@ -71,6 +72,8 @@ export default function SubscribePopup({ email, chatId }) {
     };
   }, []);
 
+  const acceptCallMessage = function () {}
+  
   const subscribeUser = async (isSubscribed) => {
 
     if (isSubscribed) {
