@@ -127,7 +127,8 @@ export async function sendPush(userId: string, chatId: string, message: string) 
             // Optionally add data payload to handle clicks in your Agora app
             data: {
                 chatId: chatId
-            }
+            },
+            url: "https://chatter-psi-six.vercel.app/?_osp=do_not_open"
         }, {
             headers: {
                 'Authorization': `Key ${oneSignalApiKey}`,
