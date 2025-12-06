@@ -20,12 +20,12 @@ export default function SubscribePopup({ email, chatId }) {
         safari_web_id: safari_web_id,
         notificationClickHandlerMatch: 'exact',
         autoResubscribe: false,
-        /*webhooks: {
+        webhooks: {
           cors: false,
           'notification.willDisplay': 'https://chatter-psi-six.vercel.app/api/onesignal/shown',
           'notification.clicked': 'https://chatter-psi-six.vercel.app/api/onesignal/accepted',
           'notification.dismissed': 'https://chatter-psi-six.vercel.app/api/onesignal/rejected'
-        },*/
+        },
         promptOptions: {
           slidedown: {
             prompts: [{
@@ -37,8 +37,8 @@ export default function SubscribePopup({ email, chatId }) {
                 label: "Incoming call"
               }],
               text: {
-                actionMessage: "Stay Updated with Chatter Messenger!",
-                acceptButton: "Enable notifications",
+                actionMessage: "Stay Updated with Chatter Messenger! Click Accept to subscribe",
+                acceptButton: "Accept",
                 //cancelButton: "Maybe Later"
               }
             }]
