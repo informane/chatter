@@ -1,10 +1,11 @@
 import dbConnect from "../../../../lib/mongodb";
-import Chat from "../../../../chatter/models/Chat";
+import Message from "../../../../chatter/models/Message";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserModelById } from "app/lib/chatter";
-
+//import NextApiRequest from 'next'
+import type { NextApiRequest } from 'next'
 export const dynamic = 'force-dynamic';
-
+//not used
 export async function GET(request: NextRequest) {
 
   // Connect to MongoDB
@@ -21,16 +22,16 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = request.nextUrl;
-  const user_id = searchParams.get('user_id');
+  const chat_id = searchParams.get('chat_id');
 
   const pipeline = [
     {
       $match: {
-        users: user_id
-      }
+        chat_id: chat_id,
+      },
     },
   ];
-  const changeStream = Chat.watch(pipeline, { fullDocument: 'updateLookup' });
+  const changeStream = Message.watch(pipeline, { fullDocument: 'updateLookup' });
 
   const encoder = new TextEncoder();
   const readableStream = new ReadableStream({
@@ -38,12 +39,7 @@ export async function GET(request: NextRequest) {
       changeStream.on('change', async (change) => {
 
         const changeObject = change.fullDocument;
-        for (const [idx, userId] of changeObject.users) {
-          if (userId == user_id) {
-            changeObject.users[0] = await getUserModelById(userId);
-          }
-        }
-
+        changeObject.user = await getUserModelById(changeObject.user);
         console.log('Change detected by Mongoose:', changeObject);
 
         const changedData = "data: " + JSON.stringify(changeObject) + "\n\n";

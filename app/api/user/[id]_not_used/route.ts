@@ -2,7 +2,7 @@ import dbConnect from '../../../lib/mongodb';
 import User, {IUser} from '../../../chatter/models/User';
 import { Model } from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
-
+//not used
 export default async function GET(request: NextRequest) {
 
   try {
