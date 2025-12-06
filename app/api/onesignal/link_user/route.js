@@ -13,6 +13,7 @@ export async function POST(request) {
         if (email) {
             const UserModel = User;
             const currentUser = await UserModel.findOne({ email: email });
+            //update oneSignal userId
             currentUser.one_signal_user_id = body.user_id;
             currentUser.save();
         }

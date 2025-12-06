@@ -4,38 +4,47 @@ import OneSignal from 'react-onesignal';
 import { linkOneSignalUserToDb } from '../lib/chatter';
 
 
-export default function SubscribePopup() {
+export default function SubscribePopup({ chatId }) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [userId, setUserId] = useState(null);
   const appId = "731a811c-a368-4af1-b5d3-6674c10f47f6";
   const safari_web_id = "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7";
 
-  console.log('appId: ', appId);
-  console.log('safari web id: ', safari_web_id);
 
   useEffect(() => {
     const initializeOneSignal = async () => {
+      //await OneSignal.logout();
       await OneSignal.init({
         appId: appId,
         safari_web_id: safari_web_id,
+        webhooks: {
+          cors: false, // Recommended: leave as false unless you need custom headers
+          'notification.willDisplay': 'http://localhost:3000/api/onesignal/shown',
+          'notification.clicked': 'https://localhost:3000/api/onesignal/accepted',
+          'notification.dismissed': 'https://localhost:3000/api/onesignal/rejected'
+        },
         /*notifyButton: {
           enable: true,
+          prenotify: true,
+          showCredit: false,
         },*/
-        allowLocalhostAsSecure: true,
+        allowLocalhostAsSecureOrigin: true,
       });
 
       // Use the native browser check for initial support
       if ('Notification' in window && navigator.serviceWorker) {
         // Check if the user is already subscribed
-        const user_id = OneSignal.User.PushSubscription.id;
+        const user_id = OneSignal.User.onesignalId;
         setUserId(user_id);
 
-        console.log('notification is presented: ', OneSignal)
+        console.log('browser notification supported: ', OneSignal)
 
         if (!user_id) {
           // User is not subscribed, show the custom UI after a delay
           setTimeout(() => setShowPrompt(true), 3000);
           console.log('user is not subbed')
+        } else {
+          console.log('user is subbed');
         }
       } else {
         console.log("Push notifications not supported in this browser/environment.");
@@ -58,7 +67,7 @@ export default function SubscribePopup() {
         console.log("Native prompt shown and hopefully accepted!");
       }
 
-      const user_id = OneSignal.User.PushSubscription.id;
+      const user_id = OneSignal.User.onesignalId;
       setUserId(user_id);
 
       if (user_id) {

@@ -236,14 +236,14 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
 
         //if(!checkUserStatus(rtmClient, getUserId(targetUserEmail, currentUserEmail), channelName: string) {};
         setCallState('CALLING');
-        const payload = 'CALL_INVITE';
+        const message = currentUserEmail + ' is calling!';
+        const PushPromise = await sendPush(oneSignalUserId, chatId, message);
+        console.log(PushPromise);
+        /*const payload = 'CALL_INVITE';
         const options = {
             customType: "CALL_INVITE",
             channelType: "USER",
-        };
-        const message = targetUserEmail + ' is calling!';
-        const PushPromise = await sendPush(oneSignalUserId, chatId, message);
-        
+        };*/
         /*if (rtmClient.current) {
             await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
         }*/

@@ -2,31 +2,38 @@
 import { useState, useEffect } from 'react';
 import OneSignal from 'react-onesignal';
 import { linkOneSignalUserToDb } from '../lib/chatter';
-export default function SubscribePopup() {
+export default function SubscribePopup({ chatId }) {
     const [showPrompt, setShowPrompt] = useState(false);
     const [userId, setUserId] = useState(null);
-    const appId = process.env.ONESIGNAL_APP_ID;
-    const safari_web_id = process.env.SAFARI_WEB_ID;
+    const appId = "731a811c-a368-4af1-b5d3-6674c10f47f6";
+    const safari_web_id = "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7";
     console.log('appId: ', appId);
     console.log('safari web id: ', safari_web_id);
     useEffect(() => {
-        console.log('appId: ', process.env.ONESIGNAL_APP_ID);
         const initializeOneSignal = async () => {
-            console.log('appId: ', process.env.ONESIGNAL_APP_ID);
             await OneSignal.init({
                 appId: appId,
                 safari_web_id: safari_web_id,
+                webhooks: {
+                    cors: false, // Recommended: leave as false unless you need custom headers
+                    //'notification.willDisplay': 'http://localhost:3000/api/onesignal/shown',
+                    'notification.clicked': 'https://localhost:3000/api/onesignal/accepted',
+                    'notification.dismissed': 'https://localhost:3000/api/onesignal/rejected'
+                },
                 /*notifyButton: {
                   enable: true,
+                  prenotify: true,
+                  showCredit: false,
                 },*/
-                //allowLocalhostAsSecure: true,
+                allowLocalhostAsSecureOrigin: true,
             });
             // Use the native browser check for initial support
             if ('Notification' in window && navigator.serviceWorker) {
-                // Check if the user is already subscribed using the new V3 method
-                setUserId(OneSignal.User.PushSubscription.id);
-                console.log('notification is presented: ', OneSignal.User);
-                if (!userId) {
+                // Check if the user is already subscribed
+                const user_id = OneSignal.User.onesignalId;
+                setUserId(user_id);
+                console.log('notification is presented: ', OneSignal);
+                if (!user_id) {
                     // User is not subscribed, show the custom UI after a delay
                     setTimeout(() => setShowPrompt(true), 3000);
                     console.log('user is not subbed');
@@ -50,14 +57,15 @@ export default function SubscribePopup() {
             else {
                 console.log("Native prompt shown and hopefully accepted!");
             }
-            setUserId(OneSignal.User.PushSubscription.id);
-            if (userId) {
-                const linkRes = await linkOneSignalUserToDb(userId);
+            const user_id = OneSignal.User.onesignalId;
+            setUserId(user_id);
+            if (user_id) {
+                const linkRes = await linkOneSignalUserToDb(user_id);
                 if (linkRes.success) {
-                    console.log('linked success');
+                    console.log('signal user linked to db success');
                 }
                 else {
-                    console.log('error linking: ', linkRes.error ? "" : "xz");
+                    console.log('error linking: ', linkRes.error ? "" : "no error msg");
                 }
             }
             // You can add logic here to track if they accepted or denied
@@ -83,8 +91,8 @@ export default function SubscribePopup() {
             zIndex: 1000
         }}>
       <h3>Stay Updated with Chatter Messenger!</h3>
-      <p>We want to notify you immediately when you receive a new message.</p>
-      <button onClick={handleSubscribeClick}>Enable Message Notifications</button>
+      <p>We want to notify you immediately when you receive a new call.</p>
+      <button onClick={handleSubscribeClick}>Enable Notifications</button>
       <button onClick={() => setShowPrompt(false)}>Maybe Later</button>
     </div>);
 }

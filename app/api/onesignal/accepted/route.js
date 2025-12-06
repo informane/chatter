@@ -1,38 +1,11 @@
 import dbConnect from '../../../lib/mongodb';
 import { NextResponse } from 'next/server';
-import axios from 'axios';
 export async function POST(request) {
     try {
         await dbConnect();
         const body = await request.json();
-        ;
-        const oneSignalAppId = process.env.ONESIGNAL_APP_ID;
-        const oneSignalApiKey = process.env.ONESIGNAL_REST_API_KEY;
-        if (!body)
-            throw new Error('Request body is empty!');
-        const { userId, messageContent, chatId } = body;
-        await axios.post('https://api.onesignal.com/notifications?c=push', {
-            app_id: oneSignalAppId,
-            "include_aliases": {
-                "onesignal_id": [
-                    userId
-                ]
-            },
-            contents: {
-                en: messageContent || "You have a new message!",
-            },
-            // Optionally add data payload to handle clicks in your Agora app
-            data: {
-                // e.g., link to the specific chat
-                chatId: chatId
-            }
-        }, {
-            headers: {
-                'Authorization': `Key ${oneSignalApiKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        return NextResponse.json({ success: true }, { status: 200 });
+        const destinationUrl = new URL('/', request.url + '?chat_id=' + body.additionalData.chatId);
+        return NextResponse.redirect(destinationUrl, 307); // Use 307 for a temporary redirect
     }
     catch (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 400 });

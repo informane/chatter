@@ -8,7 +8,7 @@ import { Suspense, useEffect, useState, useRef } from 'react';
 import './styles.scss';
 import AgoraMessasgeWrapper from './AgoraMessageDynamic';
 import VoipCallWrapper from './VoipCallDynamic';
-import { redirect } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
 import SubscribePopup from './OneSignalSubscribePopup';
 
@@ -16,7 +16,8 @@ import SubscribePopup from './OneSignalSubscribePopup';
 export default function Chatter() {
 
   const { data: session, status } = useSession();
-  const [chatId, setChatId] = useState(null);
+  const searchParams = useSearchParams();
+  const [chatId, setChatId] = useState(searchParams.get('chat_id') ?? null);
   const [newMessageChatId, setNewMessageChatId] = useState(null);
   const [shown, setShown] = useState(false);
   //const [chatList, setChatList] = useState([]);
@@ -27,6 +28,7 @@ export default function Chatter() {
   useEffect(() => {
 
     async function initTargetUser() {
+
       console.log(chatId, myEmail)
       let target_user;
       setMyEmail(await getServerSessionEmail());
@@ -83,7 +85,7 @@ export default function Chatter() {
       <div className='main'>
         <header>
           <Header />
-          <SubscribePopup/>
+          <SubscribePopup chatId={chatId}/>
         </header>
         <section className='chat-window'>
           <aside>
