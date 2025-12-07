@@ -88,6 +88,7 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
 
   const willDisplayBackRejectCallMessage = function (e) {
     
+    console.log('event cancel call event: ', e)
     if(e.data.action == 'cancel_call') {
       onChangeCallState('IDLE');
     }
