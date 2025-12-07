@@ -287,7 +287,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
     }
 
     if (callState === 'IN_CALL' || callState == 'CALLING') {
-
+        router.replace(`${pathname}`)
         //if (!isLoadingCam && !isLoadingMic)         
         if (camError)
             return (<div>{camError.message}</div>)
@@ -345,7 +345,6 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 </div>
             );
         } else {
-            router.replace(`${pathname}`)
             return (
                 <div className='call-wrapper'>loading...</div>
             )
