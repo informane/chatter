@@ -21,7 +21,7 @@ export default function SubscribePopup({ email, chatId }) {
         //notificationClickHandlerMatch: 'exact',
         notificationClickHandlerAction: 'focus',
         welcomeNotification: {
-          message: 'Now you can chat with Google Users'
+          message: 'Now you can chat with Google Users' 
         },
         autoResubscribe: false,
         webhooks: {

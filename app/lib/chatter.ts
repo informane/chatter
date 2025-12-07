@@ -112,7 +112,7 @@ export async function sendPushCall(userId: string, chatId: string, status: strin
             "web_buttons": [
                 {
                     "id": "accept",
-                    "text": "Accept",
+                    "text": "Answer",
                     "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
                 },
                 /*{

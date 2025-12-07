@@ -75,7 +75,7 @@ function isTrackPublished(agoraClient, trackToCheck) {
 export default function VoipCall({ status, chatId, oneSignalUserId, currentUserEmail, targetUserEmail }: { status: string, chatId: string, oneSignalUserId: string, currentUserEmail: string, targetUserEmail: string }) {
 
     const { RTM } = AgoraRTM;
-    const [callState, setCallState] = useState(status ? 'IDLE' : status);
+    const [callState, setCallState] = useState(!status ? 'IDLE' : status);
     const [remoteUserEmail] = useState(targetUserEmail);
     const rtmClient = useRef(null);
     const rtcClient = useRTCClient();
@@ -239,7 +239,7 @@ export default function VoipCall({ status, chatId, oneSignalUserId, currentUserE
         //if(!checkUserStatus(rtmClient, getUserId(targetUserEmail, currentUserEmail), channelName: string) {};
         setCallState('CALLING');
         const message = currentUserEmail + ' is calling!';
-        const PushPromise = await sendPushCall(oneSignalUserId, chatId, 'RECEIVING_CALL', message);
+        const PushPromise = await sendPushCall(oneSignalUserId, chatId, 'IN_CALL', message);
         console.log(PushPromise);
         /*const payload = 'CALL_INVITE';
         const options = {
