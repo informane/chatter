@@ -171,7 +171,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                     handleJoin(localCameraTrack, localMicrophoneTrack);
 
                 } else if (signal === 'CALL_END') {
-
+                    setCallState('IDLE');
                     handleLeave();
                 }
             });
@@ -224,7 +224,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
             if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
                 await rtcClient.unpublish(localMicrophoneTrack);
             if (rtcClient) await rtcClient.leave();
-            setCallState('IDLE');
+
             // Notify the other user the call ended
             //const message = currentUserEmail + ' hanged up!';
             //const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
@@ -273,7 +273,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
     };
 
     const cancelCall = async () => {
-
+        setCallState('IDLE');
         await handleLeave();
 
     }
