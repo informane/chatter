@@ -64,7 +64,6 @@ export default function SubscribePopup({ email, chatId }) {
       );
 
     }
-
     initializeOneSignal();
     // Cleanup the event listener when the component unmounts
     /*return () => {
