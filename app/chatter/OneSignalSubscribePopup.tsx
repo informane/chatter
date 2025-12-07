@@ -78,12 +78,12 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
 
     console.log("Notification clicked on client side: ", e);
 
-    if (e.actionId = 'cancel') {
+    //if (e.actionId = 'cancel') {
       const chatId = e.notification.data.chatId;
       const backUserId = e.notification.data.userId;
       const message = 'User hanged up!';
       sendPushHangUp(backUserId, chatId, message)
-    }
+    //}
   }
 
   const willDisplayBackRejectCallMessage = function (e) {
