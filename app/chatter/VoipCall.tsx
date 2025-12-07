@@ -183,7 +183,7 @@ export default function VoipCall({ status, chatId, oneSignalUserId, currentUserE
                 console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
                 isInited.current = true;
                 await init()
-
+                console.log('state:', status, callState);
                 if (status == 'RECEIVING_CALL') {
                     await answerCall();
                 }
