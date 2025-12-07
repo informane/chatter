@@ -225,16 +225,16 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
             setCallState('IDLE');
             // Notify the other user the call ended
-            const message = currentUserEmail + ' hanged up!';
-            const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
-            /*const payload = "CALL_END";
+            //const message = currentUserEmail + ' hanged up!';
+            //const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
+            const payload = "CALL_END";
             const options = {
                 customType: "CALL_END",
                 channelType: "USER",
             };
             if (rtmClient.current) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-            }*/
+            }
         }
 
     });
