@@ -254,7 +254,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
         };
         /*if (rtmClient.current) {
             await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-        }
+        }*/
     };
 
     const answerCall = async () => {
