@@ -247,14 +247,14 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
         const message = currentUserEmail + ' is calling!';
         const PushPromise = await sendPushCall(oneSignalUserId, chatId, 'RECEIVING_CALL', message);
         console.log(PushPromise);
-        /*const payload = 'CALL_INVITE';
+        const payload = 'CALL_INVITE';
         const options = {
             customType: "CALL_INVITE",
             channelType: "USER",
-        };*/
+        };
         /*if (rtmClient.current) {
             await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-        }*/
+        }
     };
 
     const answerCall = async () => {
