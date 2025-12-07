@@ -108,8 +108,8 @@ export async function sendPushCall(userId: string, chatId: string, status: strin
 
         await axios.post('https://api.onesignal.com/notifications?c=push', {
             app_id: oneSignalAppId,
-            "target_channel": "push",
-            "web_buttons": [
+            target_channel: "push",
+            web_buttons: [
                 {
                     "id": "accept",
                     "text": "Answer",
@@ -118,13 +118,17 @@ export async function sendPushCall(userId: string, chatId: string, status: strin
                 {
                     "id": "cancel",
                     "text": "Cancel",
-                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=IDLE"
+                    "url": "https://chatter-psi-six.vercel.app/_osp=do_not_open"
                 }
             ],
-            "include_aliases": {
-                "onesignal_id": [
+            include_aliases: {
+                onesignal_id: [
                     userId
                 ]
+            },
+            data: {
+                onesignal_id: userId,
+                chatId: chatId
             },
             contents: {
                 en: message,
@@ -137,7 +141,7 @@ export async function sendPushCall(userId: string, chatId: string, status: strin
             }
         });
 
-        return { success: true, message: 'Notification sent' };
+        return { success: true, message: 'Call Notification sent' };
 
     } catch (error) {
         console.error("Error sending notification:", error.response?.data || error.message);
@@ -145,7 +149,7 @@ export async function sendPushCall(userId: string, chatId: string, status: strin
     }
 }
 
-export async function sendPushHangUp(userId: string, chatId: string, status: string, message: string) {
+export async function sendPushHangUp(userId: string, chatId: string, message: string) {
     try {
         await dbConnect();
         var oneSignalAppId = process.env.ONESIGNAL_APP_ID;
@@ -153,9 +157,9 @@ export async function sendPushHangUp(userId: string, chatId: string, status: str
 
         await axios.post('https://api.onesignal.com/notifications?c=push', {
             app_id: oneSignalAppId,
-            "target_channel": "push",
-            "include_aliases": {
-                "onesignal_id": [
+            target_channel: "push",
+            include_aliases: {
+                onesignal_id: [
                     userId
                 ]
             },
@@ -163,9 +167,10 @@ export async function sendPushHangUp(userId: string, chatId: string, status: str
                 en: message,
             },
             data: {
+                onesignal_id: userId,
                 chatId: chatId
             },
-            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
         }, {
             headers: {
                 'Authorization': `Key ${oneSignalApiKey}`,
@@ -173,7 +178,7 @@ export async function sendPushHangUp(userId: string, chatId: string, status: str
             }
         });
 
-        return { success: true, message: 'Notification sent' };
+        return { success: true, message: 'Hanp Up Notification sent' };
 
     } catch (error) {
         console.error("Error sending notification:", error.response?.data || error.message);

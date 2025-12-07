@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRTCClient, LocalVideoTrack, LocalAudioTrack, useLocalCameraTrack, useLocalMicrophoneTrack, useRemoteUsers, useRemoteAudioTracks, useRemoteVideoTracks, RemoteAudioTrack, RemoteVideoTrack } from 'agora-rtc-react';
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
-import { sendPush } from 'app/lib/chatter';
+import { sendPushCall, sendPushHangUp } from 'app/lib/chatter';
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1, email2) => {
     email1 = email1.replaceAll('.', '');
@@ -48,9 +48,9 @@ function isTrackPublished(agoraClient, trackToCheck) {
     return false;
   }
 };*/
-export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, targetUserEmail }) {
+export default function VoipCall({ status, chatId, oneSignalUserId, currentUserEmail, targetUserEmail }) {
     const { RTM } = AgoraRTM;
-    const [callState, setCallState] = useState('IDLE');
+    const [callState, setCallState] = useState(status ? status : 'IDLE');
     const [remoteUserEmail] = useState(targetUserEmail);
     const rtmClient = useRef(null);
     const rtcClient = useRTCClient();
@@ -125,7 +125,6 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
                     handleJoin(localCameraTrack, localMicrophoneTrack);
                 }
                 else if (signal === 'CALL_END') {
-                    setCallState('IDLE');
                     handleLeave();
                 }
             });
@@ -135,6 +134,9 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
                 console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
                 isInited.current = true;
                 await init();
+                if (status == 'RECEIVING_CALL') {
+                    await answerCall();
+                }
             }, 3000);
         }
         //await new Promise(resolve => setTimeout(resolve, 3000));
@@ -162,15 +164,18 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
         if (rtcClient)
             await rtcClient.leave();
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
+            setCallState('IDLE');
             // Notify the other user the call ended
-            const payload = "CALL_END";
+            const message = currentUserEmail + ' hanged up!';
+            const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
+            /*const payload = "CALL_END";
             const options = {
                 customType: "CALL_END",
                 channelType: "USER",
             };
             if (rtmClient.current) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-            }
+            }*/
         }
     });
     // UI Actions
@@ -178,7 +183,7 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
         //if(!checkUserStatus(rtmClient, getUserId(targetUserEmail, currentUserEmail), channelName: string) {};
         setCallState('CALLING');
         const message = currentUserEmail + ' is calling!';
-        const PushPromise = await sendPush(oneSignalUserId, chatId, message);
+        const PushPromise = await sendPushCall(oneSignalUserId, chatId, 'RECEIVING_CALL', message);
         console.log(PushPromise);
         /*const payload = 'CALL_INVITE';
         const options = {
@@ -193,6 +198,7 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
         console.log('tracks: ', isLoadingDevices, localCameraTrack, localMicrophoneTrack);
         await handleJoin(localCameraTrack, localMicrophoneTrack);
         setCallState('IN_CALL');
+        //const PushPromise = await sendPushCall(oneSignalUserId, chatId, 'IN_CALL', '');
         const payload = "CALL_ANSWERED";
         const options = {
             customType: "CALL_ANSWERED",
@@ -201,7 +207,6 @@ export default function VoipCall({ chatId, oneSignalUserId, currentUserEmail, ta
         await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
     };
     const cancelCall = async () => {
-        setCallState('IDLE');
         await handleLeave();
     };
     if (callState === 'IN_CALL' || callState == 'CALLING') {

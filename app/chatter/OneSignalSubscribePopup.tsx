@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import OneSignal from 'react-onesignal';
 import { linkOneSignalUserToDb } from '../lib/chatter';
 import { redirect } from 'next/dist/server/api-utils';
-
+import { sendPushHangUp } from '../lib/chatter';
 
 export default function SubscribePopup({ email, chatId }) {
 
@@ -21,7 +21,7 @@ export default function SubscribePopup({ email, chatId }) {
         //notificationClickHandlerMatch: 'exact',
         notificationClickHandlerAction: 'focus',
         welcomeNotification: {
-          message: 'Now you can chat with Google Users' 
+          message: 'Now you can chat with Google Users'
         },
         autoResubscribe: false,
         webhooks: {
@@ -56,8 +56,8 @@ export default function SubscribePopup({ email, chatId }) {
         //allowLocalhostAsSecureOrigin: true,
       });
 
-      //OneSignal.Notifications.addEventListener("click", acceptCallMessage);
-
+      OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+      OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
       OneSignal.User.PushSubscription.addEventListener(
         'change',
         subscribeUser
@@ -67,15 +67,29 @@ export default function SubscribePopup({ email, chatId }) {
 
     initializeOneSignal();
     // Cleanup the event listener when the component unmounts
-    return () => {
+    /*return () => {
       OneSignal.User.PushSubscription.removeEventListener(
         'change',
         subscribeUser
       );
-    };
+    };*/
   }, []);
 
-  const acceptCallMessage = function () { }
+  const rejectCallMessage = function (e) {
+
+    console.log("Notification clicked on client side: ", e);
+
+    if (e.actionId = 'cancel') {
+      const chatId = e.notification.data.chatId;
+      const backUserId = e.notification.data.userId;
+      const message = 'User hanged up!';
+      sendPushHangUp(backUserId, chatId, message)
+    }
+  }
+
+  const willDisplayBackRejectCallMessage = function (e) {
+    
+  }
 
   const subscribeUser = async (isSubscribed) => {
 

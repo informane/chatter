@@ -87,7 +87,7 @@ export async function linkOneSignalUserToDb(userId) {
         return { success: false, error: error.message };
     }
 }
-export async function sendPush(userId, chatId, message) {
+export async function sendPushCall(userId, chatId, status, message) {
     var _a, _b;
     try {
         await dbConnect();
@@ -95,26 +95,74 @@ export async function sendPush(userId, chatId, message) {
         var oneSignalApiKey = process.env.ONESIGNAL_REST_API_KEY;
         await axios.post('https://api.onesignal.com/notifications?c=push', {
             app_id: oneSignalAppId,
-            "target_channel": "push",
-            "include_aliases": {
-                "onesignal_id": [
+            target_channel: "push",
+            web_buttons: [
+                {
+                    "id": "accept",
+                    "text": "Answer",
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
+                },
+                {
+                    "id": "cancel",
+                    "text": "Cancel",
+                    "url": "https://chatter-psi-six.vercel.app/_osp=do_not_open"
+                }
+            ],
+            include_aliases: {
+                onesignal_id: [
                     userId
                 ]
+            },
+            data: {
+                onesignal_id: userId,
+                chatId: chatId
             },
             contents: {
                 en: message,
             },
-            // Optionally add data payload to handle clicks in your Agora app
-            data: {
-                chatId: chatId
-            }
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
         }, {
             headers: {
                 'Authorization': `Key ${oneSignalApiKey}`,
                 'Content-Type': 'application/json'
             }
         });
-        return { success: true, message: 'Notification sent' };
+        return { success: true, message: 'Call Notification sent' };
+    }
+    catch (error) {
+        console.error("Error sending notification:", ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
+        return { success: false, message: (_b = error.response) === null || _b === void 0 ? void 0 : _b.data };
+    }
+}
+export async function sendPushHangUp(userId, chatId, message) {
+    var _a, _b;
+    try {
+        await dbConnect();
+        var oneSignalAppId = process.env.ONESIGNAL_APP_ID;
+        var oneSignalApiKey = process.env.ONESIGNAL_REST_API_KEY;
+        await axios.post('https://api.onesignal.com/notifications?c=push', {
+            app_id: oneSignalAppId,
+            target_channel: "push",
+            include_aliases: {
+                onesignal_id: [
+                    userId
+                ]
+            },
+            contents: {
+                en: message,
+            },
+            data: {
+                onesignal_id: userId,
+                chatId: chatId
+            },
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
+        }, {
+            headers: {
+                'Authorization': `Key ${oneSignalApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return { success: true, message: 'Hanp Up Notification sent' };
     }
     catch (error) {
         console.error("Error sending notification:", ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) || error.message);
