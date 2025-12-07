@@ -131,12 +131,10 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
         }
     };
 
-    //const router = useRouter()
-    //const pathname = usePathname()
-    //const searchParams = useSearchParams()
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
 
-    //const nextSearchParams = new URLSearchParams(searchParams.toString())
-    //nextSearchParams.delete('state')
 
 
     var handleConnectionStateChange = (state: string, reason: string) => {
@@ -197,7 +195,10 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 }
             }, 3000);
         }
-
+        //
+        if (state == 'IDLE') {
+            handleLeave();
+        }
         //await new Promise(resolve => setTimeout(resolve, 3000));
         return () => {
 
@@ -242,8 +243,12 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 customType: "CALL_END",
                 channelType: "USER",
             };
-            if (rtmClient.current) {
+            if (rtmClient.current && state != 'IDLE') {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
+            } else if (state == "IDLE") {
+                const nextSearchParams = new URLSearchParams(searchParams.toString())
+                nextSearchParams.delete('state')
+                router.replace(`${pathname}?${nextSearchParams}`)
             }
 
         }
@@ -289,7 +294,6 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
     }
 
     if (callState === 'IN_CALL' || callState == 'CALLING') {
-        //router.replace(`${pathname}`)
         //if (!isLoadingCam && !isLoadingMic)         
         if (camError)
             return (<div>{camError.message}</div>)
