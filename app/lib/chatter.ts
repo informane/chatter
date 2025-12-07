@@ -115,11 +115,11 @@ export async function sendPushCall(userId: string, chatId: string, status: strin
                     "text": "Answer",
                     "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
                 },
-                /*{
+                {
                     "id": "cancel",
                     "text": "Cancel",
-                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
-                }*/
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=IDLE"
+                }
             ],
             "include_aliases": {
                 "onesignal_id": [
