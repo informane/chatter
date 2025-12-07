@@ -21,6 +21,7 @@ import AgoraRTM from 'agora-rtm-sdk';
 import { sendPushCall, sendPushHangUp } from 'app/lib/chatter';
 import { ChatTokenBuilder } from 'agora-token';
 import { stat } from 'fs';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
 
 // Helper function to generate a consistent channel name for a 1:1 call
@@ -130,6 +131,13 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
         }
     };
 
+    const router = useRouter()
+    const pathname = usePathname()
+    //const searchParams = useSearchParams()
+
+    //const nextSearchParams = new URLSearchParams(searchParams.toString())
+    //nextSearchParams.delete('state')
+
 
     var handleConnectionStateChange = (state: string, reason: string) => {
         console.log('Connection State Changed:', state, 'Reason:', reason);
@@ -171,7 +179,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                     handleJoin(localCameraTrack, localMicrophoneTrack);
 
                 } else if (signal === 'CALL_END') {
-                    setCallState('IDLE');
+
                     handleLeave();
                 }
             });
@@ -224,7 +232,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
             if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
                 await rtcClient.unpublish(localMicrophoneTrack);
             if (rtcClient) await rtcClient.leave();
-
+            setCallState('IDLE');
             // Notify the other user the call ended
             //const message = currentUserEmail + ' hanged up!';
             //const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
@@ -273,7 +281,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
     };
 
     const cancelCall = async () => {
-        setCallState('IDLE');
+
         await handleLeave();
 
     }
@@ -328,14 +336,20 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
     }
 
     if (callState === 'RECEIVING_CALL') {
-
-        return (
-            <div className='call-wrapper'>
-                <p>Incoming call from: {remoteUserEmail}</p>
-                <button onClick={answerCall}>Answer</button>
-                <button onClick={cancelCall}>Decline</button>
-            </div>
-        );
+        if (state == null) {
+            return (
+                <div className='call-wrapper'>
+                    <p>Incoming call from: {remoteUserEmail}</p>
+                    <button onClick={answerCall}>Answer</button>
+                    <button onClick={cancelCall}>Decline</button>
+                </div>
+            );
+        } else {
+            router.replace(`${pathname}`)
+            return (
+                <div className='call-wrapper'>loading...</div>
+            )
+        }
     }
 
     // IDLE state (Lobby UI)
