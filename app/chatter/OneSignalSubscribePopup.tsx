@@ -18,8 +18,8 @@ export default function SubscribePopup({ email, chatId }) {
       await OneSignal.init({
         appId: appId,
         safari_web_id: safari_web_id,
-        //notificationClickHandlerMatch: 'exact',
-        notificationClickHandlerAction: 'focus',
+        notificationClickHandlerMatch: 'exact',
+        notificationClickHandlerAction: 'navigate',
         welcomeNotification: {
           message: 'Now you can chat with Google Users'
         },
