@@ -20,7 +20,7 @@ import {
 import AgoraRTM from 'agora-rtm-sdk';
 import { sendPushCall, sendPushHangUp } from 'app/lib/chatter';
 import { ChatTokenBuilder } from 'agora-token';
-import { stat } from 'fs';
+
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
 
@@ -131,8 +131,8 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
         }
     };
 
-    const router = useRouter()
-    const pathname = usePathname()
+    //const router = useRouter()
+    //const pathname = usePathname()
     //const searchParams = useSearchParams()
 
     //const nextSearchParams = new URLSearchParams(searchParams.toString())
@@ -231,8 +231,9 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 await rtcClient.unpublish(localCameraTrack);
             if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
                 await rtcClient.unpublish(localMicrophoneTrack);
-            if (rtcClient) await rtcClient.leave();
             setCallState('IDLE');
+            if (rtcClient) await rtcClient.leave();
+
             // Notify the other user the call ended
             //const message = currentUserEmail + ' hanged up!';
             //const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
@@ -244,6 +245,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
             if (rtmClient.current) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
             }
+
         }
 
     });
@@ -287,7 +289,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
     }
 
     if (callState === 'IN_CALL' || callState == 'CALLING') {
-        router.replace(`${pathname}`)
+        //router.replace(`${pathname}`)
         //if (!isLoadingCam && !isLoadingMic)         
         if (camError)
             return (<div>{camError.message}</div>)
