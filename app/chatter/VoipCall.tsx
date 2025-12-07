@@ -184,7 +184,7 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 isInited.current = true;
                 await init()
                 console.log('state:', state, callState);
-                if (state == 'RECEIVING_CALL') {
+                if (callState == 'RECEIVING_CALL') {
                     await answerCall();
                 }
             }, 3000);
