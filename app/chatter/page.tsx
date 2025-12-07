@@ -20,7 +20,7 @@ export default function Chatter({
   searchParams: Promise<{ chat_id?: string, state?: string }>
 }) {
   const params = use(searchParams)
-
+  const [callState, setCallState] = useState(params.state ?? null);
   const { data: session, status } = useSession();
   const [chatId, setChatId] = useState(params.chat_id ?? null);
   const [newMessageChatId, setNewMessageChatId] = useState(null);
@@ -90,7 +90,7 @@ export default function Chatter({
       <div className='main'>
         <header>
           <Header />
-          <SubscribePopup chatId={chatId} email={myEmail} />
+          <SubscribePopup chatId={chatId} email={myEmail} onChangeCallState={setCallState}/>
         </header>
         <section className='chat-window'>
           <aside>
@@ -98,7 +98,7 @@ export default function Chatter({
           </aside>
           {/*chatWindowsMap*/}
           <div className='right-side'>
-            {chatId && targetUser && <VoipCallWrapper chatId={chatId} state={params.state} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email} />}
+            {chatId && targetUser && <VoipCallWrapper chatId={chatId} state={callState} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email} />}
             {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
           </div>
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}

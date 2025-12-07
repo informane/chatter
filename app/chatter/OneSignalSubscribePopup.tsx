@@ -5,7 +5,7 @@ import { linkOneSignalUserToDb } from '../lib/chatter';
 import { redirect } from 'next/dist/server/api-utils';
 import { sendPushHangUp } from '../lib/chatter';
 
-export default function SubscribePopup({ email, chatId }) {
+export default function SubscribePopup({ onChangeCallState, email, chatId }) {
 
   const [userId, setUserId] = useState(null);
   const appId = "731a811c-a368-4af1-b5d3-6674c10f47f6";
@@ -56,8 +56,8 @@ export default function SubscribePopup({ email, chatId }) {
         //allowLocalhostAsSecureOrigin: true,
       });
 
-      //OneSignal.Notifications.addEventListener("click", rejectCallMessage);
-      //OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
+      OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+      OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
       OneSignal.User.PushSubscription.addEventListener(
         'change',
         subscribeUser
@@ -87,7 +87,10 @@ export default function SubscribePopup({ email, chatId }) {
   }
 
   const willDisplayBackRejectCallMessage = function (e) {
-
+    
+    if(e.data.type == 'hanp_up') {
+      onChangeCallState('IDLE');
+    }
   }
 
   const subscribeUser = async (isSubscribed) => {

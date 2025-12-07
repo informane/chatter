@@ -167,6 +167,7 @@ export async function sendPushHangUp(userId: string, chatId: string, message: st
                 en: message,
             },
             data: {
+                type: 'hang_up',
                 onesignal_id: userId,
                 chatId: chatId
             },
