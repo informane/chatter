@@ -5,9 +5,9 @@ import VoipCall from './VoipCall';
 //import { IAgoraRTCClient } from 'agora-rtc-sdk-ng';
 const clientConfig = { mode: "rtc", codec: "vp8" };
 // Wrapper Component with Providers
-export function VoipCallWrapper({ status, chatId, userId, userEmail, targetUserEmail }) {
+export function VoipCallWrapper({ state, chatId, userId, userEmail, targetUserEmail }) {
     const AgoraRtcClient = useRTCClient(AgoraRTC.createClient(clientConfig));
     return (<AgoraRTCProvider client={AgoraRtcClient}>
-            <VoipCall status={status} chatId={chatId} oneSignalUserId={userId} currentUserEmail={userEmail} targetUserEmail={targetUserEmail}/>
+            <VoipCall state={state} chatId={chatId} oneSignalUserId={userId} currentUserEmail={userEmail} targetUserEmail={targetUserEmail}/>
         </AgoraRTCProvider>);
 }

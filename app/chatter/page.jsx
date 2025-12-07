@@ -75,7 +75,7 @@ export default function Chatter({ searchParams, }) {
           </aside>
           {/*chatWindowsMap*/}
           <div className='right-side'>
-            {chatId && targetUser && <VoipCallWrapper chatId={chatId} status={status} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email}/>}
+            {chatId && targetUser && <VoipCallWrapper chatId={chatId} state={params.state} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email}/>}
             {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
           </div>
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}

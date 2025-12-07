@@ -8,10 +8,10 @@ const DynamicVoipCall = dynamic(
   { ssr: false, loading: () => <p>Loading communication module...</p> }
 );
 
-export default function VoipCallDynamic({status, chatId, userId, userEmail, targetUserEmail }: { status: string, chatId: string, userId: string, userEmail: string, targetUserEmail: string }) {
+export default function VoipCallDynamic({state, chatId, userId, userEmail, targetUserEmail }: { state: string, chatId: string, userId: string, userEmail: string, targetUserEmail: string }) {
 
   return (
-    <DynamicVoipCall status={status} chatId={chatId} userId={userId} userEmail={userEmail} targetUserEmail={targetUserEmail} />
+    <DynamicVoipCall state={state} chatId={chatId} userId={userId} userEmail={userEmail} targetUserEmail={targetUserEmail} />
   );
 }
 

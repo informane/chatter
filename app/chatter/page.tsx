@@ -17,7 +17,7 @@ import { use } from 'react'
 export default function Chatter({
   searchParams,
 }: {
-  searchParams: Promise<{ chat_id?: string }>
+  searchParams: Promise<{ chat_id?: string, state?: string }>
 }) {
   const params = use(searchParams)
 
@@ -98,7 +98,7 @@ export default function Chatter({
           </aside>
           {/*chatWindowsMap*/}
           <div className='right-side'>
-            {chatId && targetUser && <VoipCallWrapper chatId={chatId} status={status} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email} />}
+            {chatId && targetUser && <VoipCallWrapper chatId={chatId} state={params.state} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email} />}
             {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
           </div>
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}

@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 export default function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ chat_id?: string }>
+  searchParams: Promise<{ chat_id?: string, state?: string }>
 }) {
   return (
     <Suspense fallback={<>...</>}>

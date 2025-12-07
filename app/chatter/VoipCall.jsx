@@ -48,9 +48,9 @@ function isTrackPublished(agoraClient, trackToCheck) {
     return false;
   }
 };*/
-export default function VoipCall({ status, chatId, oneSignalUserId, currentUserEmail, targetUserEmail }) {
+export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEmail, targetUserEmail }) {
     const { RTM } = AgoraRTM;
-    const [callState, setCallState] = useState(status ? status : 'IDLE');
+    const [callState, setCallState] = useState(state ? state : 'IDLE');
     const [remoteUserEmail] = useState(targetUserEmail);
     const rtmClient = useRef(null);
     const rtcClient = useRTCClient();
@@ -134,6 +134,7 @@ export default function VoipCall({ status, chatId, oneSignalUserId, currentUserE
                 console.log("tracks: ", isLoadingDevices, localCameraTrack, localMicrophoneTrack, isInited.current);
                 isInited.current = true;
                 await init();
+                console.log('state:', status, callState);
                 if (status == 'RECEIVING_CALL') {
                     await answerCall();
                 }
