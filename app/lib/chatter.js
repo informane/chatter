@@ -87,7 +87,7 @@ export async function linkOneSignalUserToDb(userId) {
         return { success: false, error: error.message };
     }
 }
-export async function sendPushCall(userId, chatId, status, message) {
+export async function sendPushCall(userId, chatId, state, message) {
     var _a, _b;
     try {
         await dbConnect();
@@ -100,7 +100,7 @@ export async function sendPushCall(userId, chatId, status, message) {
                 {
                     "id": "accept",
                     "text": "Answer",
-                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&state=" + state
                 },
                 {
                     "id": "cancel",
@@ -120,7 +120,7 @@ export async function sendPushCall(userId, chatId, status, message) {
             contents: {
                 en: message,
             },
-            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&state=" + state
         }, {
             headers: {
                 'Authorization': `Key ${oneSignalApiKey}`,

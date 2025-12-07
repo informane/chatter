@@ -13,8 +13,8 @@ export default function SubscribePopup({ email, chatId }) {
             await OneSignal.init({
                 appId: appId,
                 safari_web_id: safari_web_id,
-                //notificationClickHandlerMatch: 'exact',
-                notificationClickHandlerAction: 'focus',
+                notificationClickHandlerMatch: 'exact',
+                notificationClickHandlerAction: 'navigate',
                 welcomeNotification: {
                     message: 'Now you can chat with Google Users'
                 },
@@ -50,8 +50,8 @@ export default function SubscribePopup({ email, chatId }) {
                 },*/
                 //allowLocalhostAsSecureOrigin: true,
             });
-            OneSignal.Notifications.addEventListener("click", rejectCallMessage);
-            OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
+            //OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+            //OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
             OneSignal.User.PushSubscription.addEventListener('change', subscribeUser);
         };
         initializeOneSignal();

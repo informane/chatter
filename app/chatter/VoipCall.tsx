@@ -216,13 +216,14 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
     }
 
     var handleLeave = (async () => {
-        if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack))
-            await rtcClient.unpublish(localCameraTrack);
-        if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
-            await rtcClient.unpublish(localMicrophoneTrack);
-        if (rtcClient) await rtcClient.leave();
+
 
         if (callState === 'IN_CALL' || callState == 'CALLING' || callState == 'RECEIVING_CALL') {
+            if (localCameraTrack && rtcClient && isTrackPublished(rtcClient, localCameraTrack))
+                await rtcClient.unpublish(localCameraTrack);
+            if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
+                await rtcClient.unpublish(localMicrophoneTrack);
+            if (rtcClient) await rtcClient.leave();
             setCallState('IDLE');
             // Notify the other user the call ended
             //const message = currentUserEmail + ' hanged up!';
