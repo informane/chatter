@@ -100,7 +100,7 @@ export async function linkOneSignalUserToDb(userId: string) {
     }
 }
 
-export async function sendPushCall(userId: string, chatId: string, message: string) {
+export async function sendPushCall(userId: string, chatId: string, status: string, message: string) {
     try {
         await dbConnect();
         var oneSignalAppId = process.env.ONESIGNAL_APP_ID;
@@ -113,7 +113,7 @@ export async function sendPushCall(userId: string, chatId: string, message: stri
                 {
                     "id": "accept",
                     "text": "Accept",
-                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
                 },
                 /*{
                     "id": "cancel",
@@ -129,10 +129,7 @@ export async function sendPushCall(userId: string, chatId: string, message: stri
             contents: {
                 en: message,
             },
-            data: {
-                chatId: chatId
-            },
-            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
         }, {
             headers: {
                 'Authorization': `Key ${oneSignalApiKey}`,
@@ -148,7 +145,7 @@ export async function sendPushCall(userId: string, chatId: string, message: stri
     }
 }
 
-export async function sendPushHangUp(userId: string, chatId: string, message: string) {
+export async function sendPushHangUp(userId: string, chatId: string, status: string, message: string) {
     try {
         await dbConnect();
         var oneSignalAppId = process.env.ONESIGNAL_APP_ID;
@@ -168,7 +165,7 @@ export async function sendPushHangUp(userId: string, chatId: string, message: st
             data: {
                 chatId: chatId
             },
-            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId
+            url: "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&status=" + status
         }, {
             headers: {
                 'Authorization': `Key ${oneSignalApiKey}`,
