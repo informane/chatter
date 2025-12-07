@@ -56,8 +56,8 @@ export default function SubscribePopup({ email, chatId }) {
         //allowLocalhostAsSecureOrigin: true,
       });
 
-      OneSignal.Notifications.addEventListener("click", rejectCallMessage);
-      OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
+      //OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+      //OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
       OneSignal.User.PushSubscription.addEventListener(
         'change',
         subscribeUser
@@ -88,7 +88,7 @@ export default function SubscribePopup({ email, chatId }) {
   }
 
   const willDisplayBackRejectCallMessage = function (e) {
-    
+
   }
 
   const subscribeUser = async (isSubscribed) => {
