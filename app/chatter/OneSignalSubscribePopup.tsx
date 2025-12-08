@@ -65,14 +65,14 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
 
     }
     initializeOneSignal();
-    /*return () => {
-      OneSignal.Notifications.removeEventListener("click", rejectCallMessage);
-      OneSignal.Notifications.removeEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
+    return () => {
+      /*OneSignal.Notifications.removeEventListener("click", rejectCallMessage);
+      OneSignal.Notifications.removeEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);*/
       OneSignal.User.PushSubscription.removeEventListener(
         'change',
         subscribeUser
       );
-    };*/
+    };
   }, []);
 
   const rejectCallMessage = function (e) {
