@@ -243,9 +243,8 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 customType: "CALL_END",
                 channelType: "USER",
             };
-            if (rtmClient.current && state != 'IDLE') {
+            if (rtmClient.current) {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
-            } else if (state == "IDLE") {
                 const nextSearchParams = new URLSearchParams(searchParams.toString())
                 nextSearchParams.delete('state')
                 router.replace(`${pathname}?${nextSearchParams}`)
