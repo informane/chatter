@@ -10,10 +10,11 @@ import { getConversationUser, getServerSessionEmail } from "app/lib/chatter";
 import SubscribePopup from './OneSignalSubscribePopup';
 import { use } from 'react';
 export default function Chatter({ searchParams, }) {
-    var _a;
+    var _a, _b;
     const params = use(searchParams);
+    const [callState, setCallState] = useState((_a = params.state) !== null && _a !== void 0 ? _a : null);
     const { data: session, status } = useSession();
-    const [chatId, setChatId] = useState((_a = params.chat_id) !== null && _a !== void 0 ? _a : null);
+    const [chatId, setChatId] = useState((_b = params.chat_id) !== null && _b !== void 0 ? _b : null);
     const [newMessageChatId, setNewMessageChatId] = useState(null);
     const [shown, setShown] = useState(false);
     //const [chatList, setChatList] = useState([]);
@@ -67,7 +68,7 @@ export default function Chatter({ searchParams, }) {
       <div className='main'>
         <header>
           <Header />
-          <SubscribePopup chatId={chatId} email={myEmail}/>
+          <SubscribePopup chatId={chatId} email={myEmail} onChangeCallState={setCallState}/>
         </header>
         <section className='chat-window'>
           <aside>
@@ -75,7 +76,7 @@ export default function Chatter({ searchParams, }) {
           </aside>
           {/*chatWindowsMap*/}
           <div className='right-side'>
-            {chatId && targetUser && <VoipCallWrapper chatId={chatId} state={params.state} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email}/>}
+            {chatId && targetUser && <VoipCallWrapper chatId={chatId} state={callState} userId={targetUser.one_signal_user_id} userEmail={session.user.email} targetUserEmail={targetUser.email}/>}
             {/*session.user.email && <AgoraMessasgeWrapper shown={chatId.current == chatList[index]._id} onNewMessage={showNotification} chat_id={chatList[index]._id} onChangeChatId={setChatId} currentUserEmail={session.user.email} targetUserEmail={chatList[index].users[0].email} />*/}
           </div>
           {/*chatId && <AgoraMessasgeWrapper shown={true} chat_id={chatId} onChangeChatId={setChatId} />*/}

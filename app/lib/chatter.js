@@ -105,7 +105,7 @@ export async function sendPushCall(userId, chatId, state, message) {
                 {
                     "id": "cancel",
                     "text": "Cancel",
-                    "url": "https://chatter-psi-six.vercel.app/_osp=do_not_open"
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&state=IDLE"
                 }
             ],
             include_aliases: {
@@ -152,6 +152,7 @@ export async function sendPushHangUp(userId, chatId, message) {
                 en: message,
             },
             data: {
+                action: 'cancel_call',
                 onesignal_id: userId,
                 chatId: chatId
             },

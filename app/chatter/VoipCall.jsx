@@ -4,6 +4,7 @@ import { useRTCClient, LocalVideoTrack, LocalAudioTrack, useLocalCameraTrack, us
 //import useMicrophoneAndCameraTracks from "agora-rtc-react";
 import AgoraRTM from 'agora-rtm-sdk';
 import { sendPushCall } from 'app/lib/chatter';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 // Helper function to generate a consistent channel name for a 1:1 call
 const getDirectChannelName = (email1, email2) => {
     email1 = email1.replaceAll('.', '');
@@ -91,6 +92,9 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
             setIsCameraMuted(newMutedState);
         }
     };
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     var handleConnectionStateChange = (state, reason) => {
         console.log('Connection State Changed:', state, 'Reason:', reason);
         // This is key: If kicked out due to conflict, manually logout before trying again later
@@ -140,6 +144,10 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 }
             }, 3000);
         }
+        //
+        if (state == 'IDLE') {
+            handleLeave();
+        }
         //await new Promise(resolve => setTimeout(resolve, 3000));
         return () => {
             if (rtmClient.current) {
@@ -163,9 +171,9 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 await rtcClient.unpublish(localCameraTrack);
             if (localMicrophoneTrack && rtcClient && isTrackPublished(rtcClient, localMicrophoneTrack))
                 await rtcClient.unpublish(localMicrophoneTrack);
+            setCallState('IDLE');
             if (rtcClient)
                 await rtcClient.leave();
-            setCallState('IDLE');
             // Notify the other user the call ended
             //const message = currentUserEmail + ' hanged up!';
             //const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
@@ -174,8 +182,13 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
                 customType: "CALL_END",
                 channelType: "USER",
             };
-            if (rtmClient.current) {
+            if (rtmClient.current && state != 'IDLE') {
                 await rtmClient.current.publish(getUserId(targetUserEmail, currentUserEmail), payload, options);
+            }
+            else if (state == "IDLE") {
+                const nextSearchParams = new URLSearchParams(searchParams.toString());
+                nextSearchParams.delete('state');
+                router.replace(`${pathname}?${nextSearchParams}`);
             }
         }
     });
@@ -244,11 +257,16 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
             </div>);
     }
     if (callState === 'RECEIVING_CALL') {
-        return (<div className='call-wrapper'>
-                <p>Incoming call from: {remoteUserEmail}</p>
-                <button onClick={answerCall}>Answer</button>
-                <button onClick={cancelCall}>Decline</button>
-            </div>);
+        if (state == null) {
+            return (<div className='call-wrapper'>
+                    <p>Incoming call from: {remoteUserEmail}</p>
+                    <button onClick={answerCall}>Answer</button>
+                    <button onClick={cancelCall}>Decline</button>
+                </div>);
+        }
+        else {
+            return (<div className='call-wrapper'>loading...</div>);
+        }
     }
     // IDLE state (Lobby UI)
     return (<div className='call-wrapper'>

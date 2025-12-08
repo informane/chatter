@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import OneSignal from 'react-onesignal';
 import { linkOneSignalUserToDb } from '../lib/chatter';
 import { sendPushHangUp } from '../lib/chatter';
-export default function SubscribePopup({ email, chatId }) {
+export default function SubscribePopup({ onChangeCallState, email, chatId }) {
     const [userId, setUserId] = useState(null);
     const appId = "731a811c-a368-4af1-b5d3-6674c10f47f6";
     const safari_web_id = "web.onesignal.auto.597eddd1-7088-4460-8312-f4c61675b8f7";
@@ -50,29 +50,31 @@ export default function SubscribePopup({ email, chatId }) {
                 },*/
                 //allowLocalhostAsSecureOrigin: true,
             });
-            //OneSignal.Notifications.addEventListener("click", rejectCallMessage);
-            //OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
+            /*OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+            OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);*/
             OneSignal.User.PushSubscription.addEventListener('change', subscribeUser);
         };
         initializeOneSignal();
-        // Cleanup the event listener when the component unmounts
-        /*return () => {
-          OneSignal.User.PushSubscription.removeEventListener(
-            'change',
-            subscribeUser
-          );
-        };*/
+        return () => {
+            /*OneSignal.Notifications.removeEventListener("click", rejectCallMessage);
+            OneSignal.Notifications.removeEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);*/
+            OneSignal.User.PushSubscription.removeEventListener('change', subscribeUser);
+        };
     }, []);
     const rejectCallMessage = function (e) {
         console.log("Notification clicked on client side: ", e);
-        if (e.actionId = 'cancel') {
-            const chatId = e.notification.data.chatId;
-            const backUserId = e.notification.data.userId;
-            const message = 'User hanged up!';
-            sendPushHangUp(backUserId, chatId, message);
-        }
+        //if (e.actionId = 'cancel') {
+        const chatId = e.notification.data.chatId;
+        const backUserId = e.notification.data.userId;
+        const message = 'User hanged up!';
+        sendPushHangUp(backUserId, chatId, message);
+        //}
     };
     const willDisplayBackRejectCallMessage = function (e) {
+        console.log('event cancel call event: ', e);
+        if (e.data.action == 'cancel_call') {
+            onChangeCallState('IDLE');
+        }
     };
     const subscribeUser = async (isSubscribed) => {
         if (isSubscribed) {
