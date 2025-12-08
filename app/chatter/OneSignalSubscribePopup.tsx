@@ -56,8 +56,8 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
         //allowLocalhostAsSecureOrigin: true,
       });
 
-      OneSignal.Notifications.addEventListener("click", rejectCallMessage);
-      OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
+      /*OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+      OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);*/
       OneSignal.User.PushSubscription.addEventListener(
         'change',
         subscribeUser
@@ -65,8 +65,9 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
 
     }
     initializeOneSignal();
-    // Cleanup the event listener when the component unmounts
     /*return () => {
+      OneSignal.Notifications.removeEventListener("click", rejectCallMessage);
+      OneSignal.Notifications.removeEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
       OneSignal.User.PushSubscription.removeEventListener(
         'change',
         subscribeUser
@@ -79,17 +80,17 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
     console.log("Notification clicked on client side: ", e);
 
     //if (e.actionId = 'cancel') {
-      const chatId = e.notification.data.chatId;
-      const backUserId = e.notification.data.userId;
-      const message = 'User hanged up!';
-      sendPushHangUp(backUserId, chatId, message)
+    const chatId = e.notification.data.chatId;
+    const backUserId = e.notification.data.userId;
+    const message = 'User hanged up!';
+    sendPushHangUp(backUserId, chatId, message)
     //}
   }
 
   const willDisplayBackRejectCallMessage = function (e) {
-    
+
     console.log('event cancel call event: ', e)
-    if(e.data.action == 'cancel_call') {
+    if (e.data.action == 'cancel_call') {
       onChangeCallState('IDLE');
     }
   }

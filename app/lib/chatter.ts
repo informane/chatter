@@ -118,7 +118,7 @@ export async function sendPushCall(userId: string, chatId: string, state: string
                 {
                     "id": "cancel",
                     "text": "Cancel",
-                    "url": "https://chatter-psi-six.vercel.app/_osp=do_not_open"
+                    "url": "https://chatter-psi-six.vercel.app/?chat_id=" + chatId + "&state=IDLE"
                 }
             ],
             include_aliases: {
