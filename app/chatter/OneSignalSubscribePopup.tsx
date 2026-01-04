@@ -24,12 +24,12 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
           message: 'Now you can chat with Google Users'
         },
         autoResubscribe: false,
-        /*webhooks: {
+        webhooks: {
           cors: false,
-          'notification.willDisplay': 'https://chatter-psi-six.vercel.app/api/onesignal/shown',
-          'notification.clicked': 'https://chatter-psi-six.vercel.app/api/onesignal/accepted',
+          //'notification.willDisplay': 'https://chatter-psi-six.vercel.app/api/onesignal/shown',
+          //  'notification.clicked': 'https://chatter-psi-six.vercel.app/api/onesignal/accepted',
           'notification.dismissed': 'https://chatter-psi-six.vercel.app/api/onesignal/rejected'
-        },*/
+        },
         promptOptions: {
           slidedown: {
             prompts: [{
@@ -56,7 +56,7 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
         //allowLocalhostAsSecureOrigin: true,
       });
 
-      OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+      /*OneSignal.Notifications.addEventListener("click", rejectCallMessage);*/
       OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
       OneSignal.User.PushSubscription.addEventListener(
         'change',
@@ -75,17 +75,17 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
     };
   }, []);
 
-  const rejectCallMessage = function (e) {
+  /*const rejectCallMessage = function (e) {
 
     console.log("Notification clicked on client side: ", e);
 
-    //if (e.actionId = 'cancel') {
-    const chatId = e.notification.data.chatId;
-    const backUserId = e.notification.data.userId;
-    const message = 'User hanged up!';
+    if (e.actionId = 'cancel') {
+      const chatId = e.notification.data.chatId;
+      const backUserId = e.notification.data.userId;
+      const message = 'User hanged up!';
     sendPushHangUp(backUserId, chatId, message)
-    //}
-  }
+    }
+  }*/
 
   const willDisplayBackRejectCallMessage = function (e) {
 
