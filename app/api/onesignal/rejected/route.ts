@@ -10,6 +10,11 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         sendPushHangUp(body.additionalData.userId, body.additionalData.chatId, 'User hanged up');
+
+        return NextResponse.json(
+            { success: true },
+            { status: 200 }
+        );
     } catch (error) {
         fs.writeFile('output.json', JSON.stringify(error), 'utf8', (err) => {
             if (err) {
