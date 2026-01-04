@@ -236,8 +236,8 @@ export default function VoipCall({ state, chatId, oneSignalUserId, currentUserEm
             if (rtcClient) await rtcClient.leave();
 
             // Notify the other user the call ended
-            //const message = currentUserEmail + ' hanged up!';
-            //const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
+            const message = currentUserEmail + ' hanged up!';
+            const PushPromise = await sendPushHangUp(oneSignalUserId, chatId, message);
             const payload = "CALL_END";
             const options = {
                 customType: "CALL_END",

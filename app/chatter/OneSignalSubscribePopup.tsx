@@ -24,7 +24,7 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
           message: 'Now you can chat with Google Users'
         },
         autoResubscribe: false,
-       /* webhooks: {
+        /*webhooks: {
           cors: false,
           'notification.willDisplay': 'https://chatter-psi-six.vercel.app/api/onesignal/shown',
           'notification.clicked': 'https://chatter-psi-six.vercel.app/api/onesignal/accepted',
@@ -56,8 +56,8 @@ export default function SubscribePopup({ onChangeCallState, email, chatId }) {
         //allowLocalhostAsSecureOrigin: true,
       });
 
-      OneSignal.Notifications.addEventListener("foregroundWillDisplay", rejectCallMessage);
-      /*OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);*/
+      OneSignal.Notifications.addEventListener("click", rejectCallMessage);
+      OneSignal.Notifications.addEventListener("foregroundWillDisplay", willDisplayBackRejectCallMessage);
       OneSignal.User.PushSubscription.addEventListener(
         'change',
         subscribeUser
